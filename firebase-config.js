@@ -25,6 +25,10 @@ const firebaseConfig = {
   apiKey: "AIzaSyCv2MKFlWIp2OWgD75x71qusDhniKWgK5U",
   authDomain: "sr-group-project.firebaseapp.com",
   databaseURL: "https://sr-group-project-default-rtdb.firebaseio.com",
+  projectId: "sr-group-project",
+  storageBucket: "sr-group-project.firebasestorage.app",
+  messagingSenderId: "825637741860",
+  appId: "1:825637741860:web:ced909aa7f68ce9219bfb1"
 };
 
 
