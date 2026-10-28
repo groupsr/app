@@ -2,25 +2,13 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report - SR Group</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-        rel="stylesheet">
-
-    <link
-        rel="stylesheet"
-        href="sidebar/sidebar.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="sidebar/sidebar.css">
 
     <style>
         body { background: #f5f6f8; }
@@ -51,6 +39,7 @@
             margin-bottom: 0.5rem;
         }
 
+        /* ---------- KPI cards ---------- */
         .summary-card {
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
@@ -58,7 +47,6 @@
             background: #fff;
             height: 100%;
         }
-
         .summary-card .summary-label {
             font-size: 0.7rem;
             text-transform: uppercase;
@@ -66,35 +54,109 @@
             color: #6c757d;
             font-weight: 600;
         }
-
         .summary-card .summary-value {
             font-size: 1.15rem;
             font-weight: 700;
             line-height: 1.15;
             color: #0d6efd;
         }
-
         .summary-card .summary-value.text-success { color: #198754; }
         .summary-card .summary-value.text-warning { color: #b45309; }
         .summary-card .summary-value.text-danger  { color: #dc3545; }
         .summary-card .summary-value.text-purple  { color: #6f42c1; }
-
+        .summary-card .summary-value.text-teal    { color: #0f766e; }
         .summary-card .summary-sub {
             font-size: 0.72rem;
             color: #6c757d;
         }
 
+        /* ---------- Filter card ---------- */
+        #filterCard .filter-list {
+            max-height: 230px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            background: #fff;
+        }
+        #filterCard .filter-list .form-check {
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
+        }
+        #filterCard .filter-list .form-check:last-child { margin-bottom: 0; }
+        #filterCard .filter-list .form-check-label {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .construction-tag {
+            font-size: 0.65rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffe69c;
+            font-weight: 600;
+        }
+        .biz-small-id {
+            font-size: 0.72rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .filter-group-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #495057;
+            margin-bottom: 0.35rem;
+        }
+        .filter-group-title .quick-links a {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #0d6efd;
+            margin-left: 6px;
+        }
+
+        /* ---------- Segment toggle ---------- */
+        .segment-toggle-list label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.4rem;
+            margin-bottom: 0.4rem;
+            cursor: pointer;
+            font-size: 0.88rem;
+            background: #fff;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .segment-toggle-list label:last-child { margin-bottom: 0; }
+        .segment-toggle-list label:hover {
+            background: #f8fafc;
+            border-color: #0d6efd;
+        }
+        .segment-toggle-list label.checked {
+            background: #eef4ff;
+            border-color: #0d6efd;
+            font-weight: 600;
+        }
+
+        /* ---------- Tree ---------- */
         .report-tree {
             background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 0.6rem;
             overflow: hidden;
         }
-
-        .tree-business {
-            border-bottom: 1px solid #eef0f3;
-        }
-
+        .tree-business { border-bottom: 1px solid #eef0f3; }
         .tree-business:last-child { border-bottom: 0; }
 
         .tree-business-header {
@@ -108,9 +170,7 @@
             gap: 0.75rem;
             flex-wrap: wrap;
         }
-
         .tree-business-header:hover { background: #f8fafc; }
-
         .tree-business-header .biz-title {
             font-weight: 700;
             font-size: 0.95rem;
@@ -119,31 +179,22 @@
             gap: 8px;
             flex-wrap: wrap;
         }
-
         .tree-business-header .biz-id {
             font-size: 0.75rem;
             color: #6c757d;
             font-weight: 500;
         }
-
         .tree-toggle-icon {
             transition: transform 0.2s ease;
             color: #6c757d;
         }
-
-        .tree-business.open .tree-toggle-icon {
-            transform: rotate(90deg);
-        }
-
+        .tree-business.open .tree-toggle-icon { transform: rotate(90deg); }
         .tree-business-body {
             display: none;
             background: #fbfcfd;
             padding: 0 1rem 1rem 1rem;
         }
-
-        .tree-business.open .tree-business-body {
-            display: block;
-        }
+        .tree-business.open .tree-business-body { display: block; }
 
         .tree-kpi-strip {
             display: flex;
@@ -151,7 +202,6 @@
             flex-wrap: wrap;
             align-items: center;
         }
-
         .mini-kpi {
             font-size: 0.72rem;
             background: #f1f5f9;
@@ -161,21 +211,12 @@
             color: #334155;
             white-space: nowrap;
         }
-
         .mini-kpi strong { color: #0d6efd; }
         .mini-kpi.green strong { color: #198754; }
         .mini-kpi.amber strong { color: #b45309; }
         .mini-kpi.purple strong { color: #6f42c1; }
-
-        .construction-tag {
-            font-size: 0.68rem;
-            padding: 2px 7px;
-            border-radius: 4px;
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffe69c;
-            font-weight: 600;
-        }
+        .mini-kpi.teal strong { color: #0f766e; }
+        .mini-kpi.red strong { color: #dc3545; }
 
         .project-block {
             background: #fff;
@@ -184,7 +225,6 @@
             margin-top: 0.75rem;
             padding: 0.75rem 0.9rem;
         }
-
         .project-block-header {
             display: flex;
             justify-content: space-between;
@@ -193,7 +233,6 @@
             gap: 8px;
             margin-bottom: 0.5rem;
         }
-
         .project-block-header .proj-title {
             font-weight: 700;
             font-size: 0.88rem;
@@ -201,7 +240,6 @@
             align-items: center;
             gap: 6px;
         }
-
         .project-block-header .proj-id {
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             font-size: 0.72rem;
@@ -217,14 +255,12 @@
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
-
         .proj-stat {
             background: #f8fafc;
             border: 1px solid #eef0f3;
             border-radius: 0.4rem;
             padding: 0.45rem 0.6rem;
         }
-
         .proj-stat .ps-label {
             font-size: 0.65rem;
             text-transform: uppercase;
@@ -232,27 +268,57 @@
             font-weight: 600;
             letter-spacing: 0.03em;
         }
-
         .proj-stat .ps-value {
             font-size: 0.95rem;
             font-weight: 700;
             color: #0f172a;
         }
-
         .proj-stat .ps-sub {
             font-size: 0.68rem;
             color: #6c757d;
+        }
+
+        /* ---------- Segment sections ---------- */
+        .segment-section {
+            margin-top: 1rem;
+            background: #fff;
+            border: 1px solid #eef0f3;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .segment-section .segment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 0.55rem 0.75rem;
+            background: #f1f5f9;
+            border-bottom: 1px solid #eef0f3;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #334155;
+        }
+        .segment-section .segment-header .seg-summary {
+            font-weight: 500;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .segment-section .segment-body { padding: 0.5rem 0.75rem 0.75rem; }
+        .segment-section .segment-empty {
+            font-size: 0.78rem;
+            color: #6c757d;
+            font-style: italic;
+            padding: 0.5rem 0;
         }
 
         .workflow-table {
             width: 100%;
             font-size: 0.78rem;
             border-collapse: collapse;
-            margin-top: 0.5rem;
         }
-
         .workflow-table th {
-            background: #f1f5f9;
+            background: #f8fafc;
             color: #475569;
             font-weight: 600;
             font-size: 0.68rem;
@@ -260,14 +326,22 @@
             letter-spacing: 0.04em;
             padding: 5px 8px;
             text-align: left;
+            border-bottom: 1px solid #eef0f3;
         }
-
         .workflow-table td {
             padding: 5px 8px;
-            border-top: 1px solid #eef0f3;
+            border-top: 1px solid #f1f5f9;
         }
-
+        .workflow-table tr:first-child td { border-top: 0; }
         .workflow-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* Low stock row */
+        .workflow-table tr.stock-low > td {
+            background: #f8d7da !important;
+        }
+        .workflow-table tr.stock-low td:first-child {
+            font-weight: 700;
+        }
 
         .phase-pill {
             font-size: 0.68rem;
@@ -277,6 +351,14 @@
             padding: 2px 7px;
             border-radius: 999px;
         }
+        .ee-pill {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        .ee-pill.earning { background: rgba(25, 135, 84, 0.15); color: #146c43; }
+        .ee-pill.expenses { background: rgba(220, 53, 69, 0.15); color: #b02a37; }
 
         .progress-bar-thin {
             height: 6px;
@@ -285,7 +367,6 @@
             overflow: hidden;
             margin-top: 3px;
         }
-
         .progress-bar-thin > div {
             height: 100%;
             background: #0d6efd;
@@ -303,76 +384,146 @@
             color: #6c757d;
             padding: 60px 16px;
         }
-
         .empty-state i {
             font-size: 3rem;
             opacity: 0.4;
             display: block;
             margin-bottom: 10px;
         }
-
         .report-loading {
             text-align: center;
             color: #6c757d;
             padding: 60px 16px;
         }
     </style>
-
 </head>
 
 <body>
 
     <div id="sidebar-container"></div>
 
-
     <main id="main-content">
-
         <div class="container-fluid p-0">
 
             <!-- HEADER -->
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
                     <h3 class="fw-bold mb-1">
                         <i class="bi bi-graph-up-arrow me-2"></i>
-                        Business & Project Report
+                        Business &amp; Project Report
                     </h3>
                     <p class="text-muted mb-0">
-                        Bills, profit, attendance and workflow — business-wise and project-wise.
+                        Bills, workflow, expenses / earnings and stock — filter, view, and export.
                     </p>
                 </div>
 
                 <div class="d-flex gap-2 flex-wrap align-items-center">
-                    <select id="dateRangeSelect"
-                        class="form-select form-select-sm"
+                    <label class="small text-muted mb-0" for="fromDate">From</label>
+                    <input type="date" id="fromDate"
+                        class="form-control form-control-sm"
                         style="width: auto;">
-                        <option value="this-month">This month</option>
-                        <option value="this-year" selected>This year</option>
-                        <option value="30d">Last 30 days</option>
-                        <option value="7d">Last 7 days</option>
-                        <option value="today">Today</option>
-                        <option value="all">All time</option>
-                    </select>
+
+                    <label class="small text-muted mb-0" for="toDate">To</label>
+                    <input type="date" id="toDate"
+                        class="form-control form-control-sm"
+                        style="width: auto;">
 
                     <button type="button"
                         class="btn btn-sm btn-outline-secondary"
-                        id="refreshBtn">
-                        <i class="bi bi-arrow-clockwise me-1"></i>
-                        Refresh
+                        id="refreshBtn"
+                        title="Reload data from Firebase">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+
+                    <button type="button"
+                        class="btn btn-sm btn-danger"
+                        id="downloadPdfBtn">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                        Download PDF
                     </button>
                 </div>
             </div>
 
-
             <!-- STATUS -->
             <div id="statusMessage" class="alert d-none"></div>
 
+            <!-- FILTERS -->
+            <div class="card border-0 shadow-sm mb-4" id="filterCard">
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <!-- Businesses -->
+                        <div class="col-md-4">
+                            <div class="filter-group-title">
+                                <span>
+                                    <i class="bi bi-building me-1"></i> Businesses
+                                </span>
+                                <span class="quick-links">
+                                    <a href="#" id="bizSelectAll">All</a>
+                                    <a href="#" id="bizSelectNone">None</a>
+                                </span>
+                            </div>
+                            <div id="businessFilterList" class="filter-list">
+                                <div class="text-muted small">Loading…</div>
+                            </div>
+                        </div>
+
+                        <!-- Projects -->
+                        <div class="col-md-4">
+                            <div class="filter-group-title">
+                                <span>
+                                    <i class="bi bi-cone-striped me-1 text-warning"></i> Projects
+                                </span>
+                                <span class="quick-links">
+                                    <a href="#" id="projSelectAll">All</a>
+                                    <a href="#" id="projSelectNone">None</a>
+                                </span>
+                            </div>
+                            <div id="projectFilterList" class="filter-list">
+                                <div class="text-muted small">Loading…</div>
+                            </div>
+                        </div>
+
+                        <!-- Segments -->
+                        <div class="col-md-4">
+                            <div class="filter-group-title">
+                                <span>
+                                    <i class="bi bi-layers me-1"></i> Segments
+                                </span>
+                            </div>
+                            <div class="segment-toggle-list">
+                                <label id="segBillsLabel" class="checked">
+                                    <input type="checkbox" id="segBills" class="form-check-input" checked>
+                                    <i class="bi bi-receipt text-primary"></i>
+                                    <span>Bills</span>
+                                </label>
+                                <label id="segEELabel" class="checked">
+                                    <input type="checkbox" id="segEE" class="form-check-input" checked>
+                                    <i class="bi bi-cash-coin text-warning"></i>
+                                    <span>Expenses &amp; Earnings</span>
+                                </label>
+                                <label id="segWorkflowLabel" class="checked">
+                                    <input type="checkbox" id="segWorkflow" class="form-check-input" checked>
+                                    <i class="bi bi-diagram-3 text-purple"></i>
+                                    <span>Workflow (Construction)</span>
+                                </label>
+                                <label id="segStockLabel" class="checked">
+                                    <input type="checkbox" id="segStock" class="form-check-input" checked>
+                                    <i class="bi bi-box-seam text-success"></i>
+                                    <span>Stock</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
 
             <!-- LOADING -->
             <div id="loadingBlock" class="report-loading">
                 <div class="spinner-border text-primary mb-2" role="status"></div>
-                <div>Loading report data...</div>
+                <div>Loading report data…</div>
             </div>
-
 
             <!-- DENIED -->
             <div id="deniedBlock" class="empty-state d-none">
@@ -380,7 +531,6 @@
                 <h5>Access Denied</h5>
                 <p class="mb-0">This report is available to Main Admin, Dev Admin and Owner roles only.</p>
             </div>
-
 
             <!-- CONTENT -->
             <div id="reportContent" class="d-none">
@@ -390,37 +540,7 @@
                     <i class="bi bi-calculator me-1"></i>
                     Grand Totals
                 </div>
-                <div class="row g-3 mb-4">
-                    <div class="col-6 col-md-3">
-                        <div class="summary-card">
-                            <div class="summary-label">Businesses</div>
-                            <div class="summary-value" id="totalBusinesses">0</div>
-                            <div class="summary-sub" id="totalProjectsSub">0 projects</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="summary-card">
-                            <div class="summary-label">Total Sales</div>
-                            <div class="summary-value text-success" id="totalSales">Rs 0.00</div>
-                            <div class="summary-sub" id="totalBillsSub">0 bills</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="summary-card">
-                            <div class="summary-label">Total Profit</div>
-                            <div class="summary-value text-warning" id="totalProfit">Rs 0.00</div>
-                            <div class="summary-sub" id="totalProfitMarginSub">— margin</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="summary-card">
-                            <div class="summary-label">Present Today</div>
-                            <div class="summary-value text-purple" id="totalPresentToday">0</div>
-                            <div class="summary-sub" id="totalAttendanceSub">0 marked</div>
-                        </div>
-                    </div>
-                </div>
-
+                <div class="row g-3 mb-4" id="kpiRow"></div>
 
                 <!-- TREE -->
                 <div class="section-title d-flex justify-content-between align-items-center">
@@ -442,29 +562,26 @@
 
                 <div id="emptyState" class="empty-state d-none">
                     <i class="bi bi-inbox"></i>
-                    <div>No businesses found.</div>
+                    <div>Nothing to display with the current filters.</div>
                 </div>
 
             </div>
 
         </div>
-
     </main>
 
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <!-- PDF: jsPDF + autoTable (real tables, selectable text, small files) -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <script type="module" src="sidebar/sidebar.js"></script>
-
 
     <script type="module">
 
         import { auth, db } from "./firebase-config.js";
-
         import {
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-
         import {
             ref, get
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
@@ -476,6 +593,19 @@
 
         const ALLOWED_ROLES = ["main-admin", "dev-admin", "owner"];
 
+        const FIELD_TOTAL_QTY = "Total Quantity";
+        const FIELD_NAME      = "Product Name";
+        const FIELD_UNIT      = "Unit";
+        const FIELD_PURCHASE  = "Purchase Price";
+        const FIELD_SELLING   = "Selling Price";
+
+        const REC_TITLE   = "Title";
+        const REC_DATE    = "Date";
+        const REC_AMOUNT  = "Amount";
+        const REC_TYPE    = "Content type";
+
+        const LOW_STOCK_THRESHOLD = 20;
+
 
         // =====================================================
         // STATE
@@ -485,21 +615,34 @@
         let currentUserData = null;
         let currentRole = "";
 
-        let businesses = {};
-        let dateRange = "this-year";
+        let fromDate = "";
+        let toDate   = "";
+
+        let allData = {};
+
+        let filterState = {
+            businessIds: new Set(),
+            projectKeys: new Set(),
+            showBills:    true,
+            showEE:       true,
+            showWorkflow: true,
+            showStock:    true
+        };
 
 
         // =====================================================
         // ELEMENTS
         // =====================================================
 
-        const statusMessage = document.getElementById("statusMessage");
-        const loadingBlock = document.getElementById("loadingBlock");
-        const deniedBlock = document.getElementById("deniedBlock");
-        const reportContent = document.getElementById("reportContent");
-        const reportTree = document.getElementById("reportTree");
-        const emptyState = document.getElementById("emptyState");
-        const dateRangeSelect = document.getElementById("dateRangeSelect");
+        const statusMessage   = document.getElementById("statusMessage");
+        const loadingBlock    = document.getElementById("loadingBlock");
+        const deniedBlock     = document.getElementById("deniedBlock");
+        const reportContent   = document.getElementById("reportContent");
+        const reportTree      = document.getElementById("reportTree");
+        const emptyState      = document.getElementById("emptyState");
+        const fromDateInput   = document.getElementById("fromDate");
+        const toDateInput     = document.getElementById("toDate");
+        const kpiRow          = document.getElementById("kpiRow");
 
 
         // =====================================================
@@ -510,7 +653,6 @@
             statusMessage.className = `alert alert-${type}`;
             statusMessage.textContent = message;
             statusMessage.classList.remove("d-none");
-
             clearTimeout(showStatus._timer);
             showStatus._timer = setTimeout(() => {
                 statusMessage.classList.add("d-none");
@@ -541,12 +683,15 @@
         function moneyShort(n) {
             const v = Number(n) || 0;
             const abs = Math.abs(v);
-
             if (abs >= 1_00_00_000) return "Rs " + (v / 1_00_00_000).toFixed(2) + " Cr";
             if (abs >= 1_00_000)    return "Rs " + (v / 1_00_000).toFixed(2) + " L";
             if (abs >= 1_000)       return "Rs " + (v / 1_000).toFixed(2) + " K";
-
             return "Rs " + v.toFixed(2);
+        }
+
+        function qtyShort(n) {
+            const v = Number(n) || 0;
+            return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
         }
 
         function todayISO() {
@@ -559,32 +704,17 @@
 
         function dateInRange(iso) {
             if (!iso) return false;
-
-            if (dateRange === "all") return true;
-
-            const now = new Date();
-
-            if (dateRange === "today") {
-                return iso === todayISO();
-            }
-
-            if (dateRange === "this-month") {
-                const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-                return iso.startsWith(month);
-            }
-
-            if (dateRange === "this-year") {
-                return iso.startsWith(String(now.getFullYear()));
-            }
-
-            if (dateRange === "7d" || dateRange === "30d") {
-                const bDate = new Date(iso + "T00:00:00");
-                if (isNaN(bDate.getTime())) return false;
-                const diffDays = (now.getTime() - bDate.getTime()) / (1000 * 60 * 60 * 24);
-                return diffDays <= (dateRange === "7d" ? 7 : 30);
-            }
-
+            if (fromDate && iso < fromDate) return false;
+            if (toDate   && iso > toDate)   return false;
             return true;
+        }
+
+        function initDateRange() {
+            const now = new Date();
+            fromDate = `${now.getFullYear()}-01-01`;
+            toDate   = todayISO();
+            fromDateInput.value = fromDate;
+            toDateInput.value   = toDate;
         }
 
 
@@ -593,20 +723,13 @@
         // =====================================================
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = "login.html";
-                return;
-            }
+            if (!user) { window.location.href = "login.html"; return; }
 
             currentUser = user;
 
             try {
                 const snap = await get(ref(db, `sr_group/users/${user.uid}`));
-
-                if (!snap.exists()) {
-                    window.location.href = "login.html";
-                    return;
-                }
+                if (!snap.exists()) { window.location.href = "login.html"; return; }
 
                 currentUserData = snap.val() || {};
                 currentRole = currentUserData.role || "";
@@ -622,6 +745,7 @@
                     return;
                 }
 
+                initDateRange();
                 await bootstrap();
 
             } catch (err) {
@@ -637,308 +761,846 @@
         // =====================================================
 
         async function bootstrap() {
-            try {
-                const snap = await get(ref(db, "sr_group/businesses"));
-                businesses = snap.exists() ? (snap.val() || {}) : {};
+            loadingBlock.classList.remove("d-none");
+            reportContent.classList.add("d-none");
 
-                await buildReport();
+            try {
+                allData = await loadAllData();
+                initFilters();
+                renderFilters();
+                renderReport();
+
+                loadingBlock.classList.add("d-none");
+                reportContent.classList.remove("d-none");
 
             } catch (err) {
                 console.error("bootstrap:", err);
-                showStatus("Failed to load report data.");
+                showStatus("Failed to load report data: " + (err.message || ""));
                 loadingBlock.classList.add("d-none");
             }
         }
 
 
         // =====================================================
-        // BUILD REPORT
+        // DATA LOADING
+        //
+        // Only TWO network reads, run in parallel.
+        //
+        // Reading "sr_group/businesses" already returns every
+        // business's bills, records, projects and each project's
+        // bills / workflow / records. The previous version then
+        // downloaded those same sub-paths again one by one
+        // (4+ sequential reads per business AND per project).
+        // Now everything is parsed from the data already in memory.
         // =====================================================
 
-        async function buildReport() {
-            loadingBlock.classList.remove("d-none");
-            reportContent.classList.add("d-none");
+        async function loadAllData() {
+            const [bizSnap, settingsSnap] = await Promise.all([
+                get(ref(db, "sr_group/businesses")),
+                get(ref(db, "sr_group/settings"))
+            ]);
 
-            const bizIds = Object.keys(businesses);
+            const businesses  = bizSnap.exists()      ? (bizSnap.val()      || {}) : {};
+            const allSettings = settingsSnap.exists() ? (settingsSnap.val() || {}) : {};
 
-            const perBusiness = await Promise.all(bizIds.map(async bizId => {
-                return await buildBusinessReport(bizId, businesses[bizId]);
-            }));
+            const data = {};
 
-            renderReport(perBusiness);
+            for (const bizId of Object.keys(businesses)) {
+                try {
+                    data[bizId] = parseBusiness(
+                        bizId,
+                        businesses[bizId] || {},
+                        allSettings[bizId] || {}
+                    );
+                } catch (err) {
+                    console.warn("parseBusiness failed:", bizId, err);
+                    data[bizId] = {
+                        bizId,
+                        bizName: bizId,
+                        isConstruction: false,
+                        bills: [], projects: [], stock: [], ee: []
+                    };
+                }
+            }
 
-            loadingBlock.classList.add("d-none");
-            reportContent.classList.remove("d-none");
+            return data;
         }
 
 
-        async function buildBusinessReport(bizId, bizData) {
-            const bizName = bizData?.name || bizId;
-            const isConstruction = bizData?.construction === true;
+        function buildFieldMap(section) {
+            const map = {};
+            for (const [fieldId, def] of Object.entries(section || {})) {
+                if (fieldId === "meta") continue;
+                const title = def?.title || "";
+                if (title) map[title] = fieldId;
+            }
+            return map;
+        }
 
-            // ---- Bills (top-level) ----
-            let bills = [];
-            try {
-                const snap = await get(ref(db, `sr_group/businesses/${bizId}/bills`));
-                if (snap.exists()) {
-                    const raw = snap.val() || {};
-                    Object.entries(raw).forEach(([id, b]) => {
-                        bills.push(normalizeBill(id, b, null, null));
+
+        function parseBusiness(bizId, biz, bizSettings) {
+            const isConstruction = biz.construction === true;
+
+            // field-id lookups are built once per business
+            const stockMap = buildFieldMap(bizSettings?.products);
+            const recMap   = buildFieldMap(bizSettings?.records);
+
+            const bills = parseBills(biz.bills);
+            const stock = parseStock(biz.records?.products, stockMap);
+            const ee    = parseExpensesEarnings(biz.records?.records, recMap);
+
+            const projects = [];
+
+            if (isConstruction) {
+                const rawProjects = biz.projects || {};
+
+                for (const pushId of Object.keys(rawProjects)) {
+                    if (pushId === "_placeholder") continue;
+
+                    const proj = rawProjects[pushId];
+                    if (!proj || typeof proj !== "object") continue;
+
+                    projects.push({
+                        pushId,
+                        projectId:   proj.projectId || "",
+                        projectName: proj.projectName || proj.name || pushId,
+                        bills:    parseBills(proj.bills),
+                        workflow: parseWorkflow(proj.resolved),
+                        stock:    parseStock(proj.records?.products, stockMap),
+                        ee:       parseExpensesEarnings(proj.records?.records, recMap)
                     });
                 }
-            } catch (err) {
-                console.warn(`bills ${bizId}:`, err);
             }
-
-            // ---- Projects (only for construction) ----
-            let projects = [];
-
-            if (isConstruction) {
-                try {
-                    const snap = await get(ref(db, `sr_group/businesses/${bizId}/projects`));
-                    const raw = snap.exists() ? (snap.val() || {}) : {};
-
-                    const pushIds = Object.keys(raw).filter(k => k !== "_placeholder");
-
-                    projects = await Promise.all(pushIds.map(async pushId => {
-                        const proj = raw[pushId] || {};
-                        return await buildProjectReport(bizId, pushId, proj);
-                    }));
-
-                } catch (err) {
-                    console.warn(`projects ${bizId}:`, err);
-                }
-            }
-
-            // ---- Attendance (top-level) ----
-            const attendance = await loadAttendance(
-                `sr_group/businesses/${bizId}/attendance`
-            );
-
-            // ---- Project attendance ----
-            if (isConstruction) {
-                await Promise.all(projects.map(async p => {
-                    p.attendance = await loadAttendance(
-                        `sr_group/businesses/${bizId}/projects/${p.pushId}/attendance`
-                    );
-                }));
-            }
-
-            // ---- Merge project bills into totals ----
-            const projectBills = projects.flatMap(p => p.bills);
-
-            const allBills = [...bills, ...projectBills];
 
             return {
                 bizId,
-                bizName,
+                bizName: biz.name || bizId,
                 isConstruction,
                 bills,
                 projects,
-                attendance,
-                totals: computeBillsTotals(allBills)
+                stock,
+                ee
             };
         }
 
 
-        async function buildProjectReport(bizId, pushId, proj) {
-            const projectId = proj.projectId || "";
-            const projectName = proj.projectName || proj.name || "";
+        function parseBills(raw) {
+            if (!raw || typeof raw !== "object") return [];
 
-            // ---- Bills ----
-            let bills = [];
-            try {
-                const snap = await get(
-                    ref(db, `sr_group/businesses/${bizId}/projects/${pushId}/bills`)
-                );
-                if (snap.exists()) {
-                    const raw = snap.val() || {};
-                    Object.entries(raw).forEach(([id, b]) => {
-                        bills.push(normalizeBill(id, b, pushId, projectId));
-                    });
-                }
-            } catch (err) {
-                console.warn(`project bills ${bizId}/${pushId}:`, err);
-            }
-
-            // ---- Workflow: resolved measurement records ----
-            let workflow = [];
-            try {
-                const snap = await get(
-                    ref(db, `sr_group/businesses/${bizId}/projects/${pushId}/resolved`)
-                );
-                if (snap.exists()) {
-                    const raw = snap.val() || {};
-                    workflow = Object.values(raw)
-                        .filter(r => r && typeof r === "object")
-                        .map(r => ({
-                            title: r.title || "",
-                            phase: r.phase || "",
-                            unit: r.unit || "",
-                            resolvedQuantity: Number(r.resolvedQuantity) || 0,
-                            resolvedAmount: Number(r.resolvedAmount) || 0,
-                            boqQuantity: Number(r.boqQuantity) || 0,
-                            boqAmount: Number(r.boqAmount) || 0,
-                            createdAt: Number(r.createdAt) || 0
-                        }))
-                        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                }
-            } catch (err) {
-                console.warn(`resolved ${bizId}/${pushId}:`, err);
-            }
-
-            return {
-                pushId,
-                projectId,
-                projectName,
-                bills,
-                workflow,
-                attendance: { total: 0, present: 0, today: [] }
-            };
-        }
-
-
-        function normalizeBill(id, b, projectPushId, projectId) {
-            return {
-                id,
-                billType: b.billType || "",
-                invoicenumber: b.invoicenumber || "",
-                invoicedate: b.invoicedate || "",
-                createdAt: Number(b.createdAt) || 0,
-                grandTotal: Number(b?.totals?.grandTotal) || 0,
-                profit: Number(b?.totals?.profit) || 0,
-                projectPushId: projectPushId || "",
-                projectId: projectId || ""
-            };
-        }
-
-
-        async function loadAttendance(basePath) {
-            const today = todayISO();
-
-            const result = {
-                total: 0,
-                present: 0,
-                today: []
-            };
-
-            try {
-                // Today's record
-                const todaySnap = await get(ref(db, `${basePath}/${today}`));
-                if (todaySnap.exists()) {
-                    const raw = todaySnap.val() || {};
-                    Object.values(raw).forEach(rec => {
-                        if (!rec || typeof rec !== "object") return;
-                        result.total++;
-                        if (rec.status === "P") result.present++;
-                        result.today.push({
-                            employeeId: rec.employeeId || "",
-                            employeeName: rec.employeeName || "",
-                            status: rec.status || ""
-                        });
-                    });
-                }
-            } catch (err) {
-                console.warn(`attendance ${basePath}:`, err);
-            }
-
-            return result;
-        }
-
-
-        function computeBillsTotals(bills) {
-            const inRange = bills.filter(b => dateInRange(b.invoicedate));
-
-            const sales = inRange.reduce((s, b) => s + (b.grandTotal || 0), 0);
-            const profit = inRange.reduce((s, b) => s + (b.profit || 0), 0);
-
-            return {
-                billCount: inRange.length,
-                totalBills: bills.length,
-                sales,
-                profit,
-                margin: sales > 0 ? (profit / sales) * 100 : 0
-            };
-        }
-
-
-        // =====================================================
-        // RENDER
-        // =====================================================
-
-        function renderReport(perBusiness) {
-
-            // Grand totals
-            let totalSales = 0;
-            let totalProfit = 0;
-            let totalBillCount = 0;
-            let totalProjectCount = 0;
-            let totalPresent = 0;
-            let totalMarked = 0;
-
-            perBusiness.forEach(b => {
-                totalSales += b.totals.sales;
-                totalProfit += b.totals.profit;
-                totalBillCount += b.totals.billCount;
-                totalProjectCount += b.projects.length;
-                totalPresent += b.attendance.present;
-                totalMarked += b.attendance.total;
-
-                b.projects.forEach(p => {
-                    totalPresent += p.attendance.present || 0;
-                    totalMarked += p.attendance.total || 0;
+            const out = [];
+            for (const [id, b] of Object.entries(raw)) {
+                if (!b || typeof b !== "object") continue;
+                out.push({
+                    id,
+                    billType:      b.billType || "",
+                    invoicenumber: b.invoicenumber || "",
+                    invoicedate:   b.invoicedate || "",
+                    createdAt:     Number(b.createdAt) || 0,
+                    grandTotal:    Number(b?.totals?.grandTotal) || 0,
+                    profit:        Number(b?.totals?.profit) || 0
                 });
-            });
+            }
+            return out;
+        }
 
-            document.getElementById("totalBusinesses").textContent = perBusiness.length;
-            document.getElementById("totalProjectsSub").textContent =
-                `${totalProjectCount} project${totalProjectCount === 1 ? "" : "s"}`;
 
-            document.getElementById("totalSales").textContent = money(totalSales);
-            document.getElementById("totalBillsSub").textContent =
-                `${totalBillCount} bill${totalBillCount === 1 ? "" : "s"} in range`;
+        function parseWorkflow(raw) {
+            if (!raw || typeof raw !== "object") return [];
+            return Object.values(raw).filter(r => r && typeof r === "object");
+        }
 
-            document.getElementById("totalProfit").textContent = money(totalProfit);
-            document.getElementById("totalProfitMarginSub").textContent =
-                totalSales > 0
-                    ? `${((totalProfit / totalSales) * 100).toFixed(1)}% margin`
-                    : "— margin";
 
-            document.getElementById("totalPresentToday").textContent = totalPresent;
-            document.getElementById("totalAttendanceSub").textContent =
-                `${totalMarked} marked today`;
+        function parseStock(raw, fieldMap) {
+            if (!raw || typeof raw !== "object") return [];
 
-            // Tree
-            reportTree.innerHTML = "";
+            const qtyId = fieldMap[FIELD_TOTAL_QTY];
+            if (!qtyId) return [];
 
-            if (!perBusiness.length) {
-                emptyState.classList.remove("d-none");
+            const nameId     = fieldMap[FIELD_NAME];
+            const unitId     = fieldMap[FIELD_UNIT];
+            const purchaseId = fieldMap[FIELD_PURCHASE];
+            const sellingId  = fieldMap[FIELD_SELLING];
+
+            const items = [];
+
+            for (const rec of Object.values(raw)) {
+                if (!rec || typeof rec !== "object") continue;
+                items.push({
+                    name:          nameId     ? String(rec[nameId]  ?? "") : "",
+                    quantity:      Number(rec[qtyId]) || 0,
+                    unit:          unitId     ? String(rec[unitId]  ?? "") : "",
+                    purchasePrice: purchaseId ? Number(rec[purchaseId]) || 0 : 0,
+                    sellingPrice:  sellingId  ? Number(rec[sellingId])  || 0 : 0
+                });
+            }
+
+            return items;
+        }
+
+
+        function parseExpensesEarnings(raw, fieldMap) {
+            if (!raw || typeof raw !== "object") return [];
+
+            const titleId  = fieldMap[REC_TITLE];
+            const dateId   = fieldMap[REC_DATE];
+            const amountId = fieldMap[REC_AMOUNT];
+            const typeId   = fieldMap[REC_TYPE];
+
+            if (!dateId || !amountId || !typeId) return [];
+
+            const items = [];
+
+            for (const [id, rec] of Object.entries(raw)) {
+                if (!rec || typeof rec !== "object") continue;
+
+                const type = String(rec[typeId] || "").trim();
+                if (type !== "Expenses" && type !== "Earning") continue;
+
+                items.push({
+                    id,
+                    title:  titleId ? String(rec[titleId] || "") : "",
+                    date:   String(rec[dateId] || ""),
+                    type,
+                    amount: Number(rec[amountId]) || 0
+                });
+            }
+
+            return items.sort((a, b) => b.date.localeCompare(a.date));
+        }
+
+
+        // =====================================================
+        // FILTERS
+        // =====================================================
+
+        function initFilters() {
+            filterState.businessIds.clear();
+            filterState.projectKeys.clear();
+
+            for (const bizId of Object.keys(allData)) {
+                filterState.businessIds.add(bizId);
+
+                const biz = allData[bizId];
+                if (biz.isConstruction) {
+                    for (const p of biz.projects) {
+                        filterState.projectKeys.add(`${bizId}::${p.pushId}`);
+                    }
+                }
+            }
+
+            filterState.showBills    = true;
+            filterState.showEE       = true;
+            filterState.showWorkflow = true;
+            filterState.showStock    = true;
+        }
+
+
+        function isBusinessVisible(bizId) {
+            return filterState.businessIds.has(bizId);
+        }
+
+        function isProjectVisible(bizId, pushId) {
+            return filterState.projectKeys.has(`${bizId}::${pushId}`);
+        }
+
+
+        function renderFilters() {
+            renderBusinessFilterList();
+            renderProjectFilterList();
+            syncSegmentToggles();
+        }
+
+
+        function renderBusinessFilterList() {
+            const list = document.getElementById("businessFilterList");
+            list.innerHTML = "";
+
+            const bizIds = Object.keys(allData).sort();
+
+            if (!bizIds.length) {
+                list.innerHTML = `<div class="text-muted small">No businesses found.</div>`;
                 return;
             }
 
-            emptyState.classList.add("d-none");
+            for (const bizId of bizIds) {
+                const biz = allData[bizId];
+                const checked = filterState.businessIds.has(bizId);
 
-            perBusiness
-                .sort((a, b) => a.bizId.localeCompare(b.bizId))
-                .forEach(b => {
-                    reportTree.appendChild(renderBusinessNode(b));
+                const label = document.createElement("label");
+                label.className = "form-check";
+
+                label.innerHTML = `
+                    <input type="checkbox"
+                        class="form-check-input biz-check"
+                        data-biz-id="${escapeHtml(bizId)}"
+                        ${checked ? "checked" : ""}>
+                    <span class="form-check-label">
+                        ${escapeHtml(biz.bizName)}
+                        <span class="biz-small-id">(${escapeHtml(bizId)})</span>
+                        ${biz.isConstruction
+                            ? `<span class="construction-tag">Construction</span>`
+                            : ""}
+                    </span>
+                `;
+
+                list.appendChild(label);
+            }
+
+            list.querySelectorAll(".biz-check").forEach(cb => {
+                cb.addEventListener("change", () => {
+                    const bizId = cb.dataset.bizId;
+                    if (cb.checked) filterState.businessIds.add(bizId);
+                    else filterState.businessIds.delete(bizId);
+
+                    renderProjectFilterList();
+                    renderReport();
                 });
+            });
         }
 
 
-        function renderBusinessNode(b) {
+        function renderProjectFilterList() {
+            const list = document.getElementById("projectFilterList");
+            list.innerHTML = "";
+
+            const entries = [];
+
+            for (const bizId of Object.keys(allData).sort()) {
+                const biz = allData[bizId];
+                if (!biz.isConstruction) continue;
+                if (!isBusinessVisible(bizId)) continue;
+
+                for (const p of biz.projects) {
+                    entries.push({ bizId, biz, p });
+                }
+            }
+
+            if (!entries.length) {
+                list.innerHTML = `<div class="text-muted small">No projects in the selected businesses.</div>`;
+                return;
+            }
+
+            for (const { bizId, biz, p } of entries) {
+                const key = `${bizId}::${p.pushId}`;
+                const checked = filterState.projectKeys.has(key);
+
+                const label = document.createElement("label");
+                label.className = "form-check";
+
+                label.innerHTML = `
+                    <input type="checkbox"
+                        class="form-check-input proj-check"
+                        data-key="${escapeHtml(key)}"
+                        ${checked ? "checked" : ""}>
+                    <span class="form-check-label">
+                        ${p.projectId
+                            ? `<span class="biz-small-id">${escapeHtml(p.projectId)}</span>`
+                            : ""}
+                        ${escapeHtml(p.projectName || p.pushId)}
+                        <span class="biz-small-id">— ${escapeHtml(biz.bizName)}</span>
+                    </span>
+                `;
+
+                list.appendChild(label);
+            }
+
+            list.querySelectorAll(".proj-check").forEach(cb => {
+                cb.addEventListener("change", () => {
+                    const key = cb.dataset.key;
+                    if (cb.checked) filterState.projectKeys.add(key);
+                    else filterState.projectKeys.delete(key);
+                    renderReport();
+                });
+            });
+        }
+
+
+        document.getElementById("bizSelectAll").addEventListener("click", (e) => {
+            e.preventDefault();
+            for (const bizId of Object.keys(allData)) filterState.businessIds.add(bizId);
+
+            filterState.projectKeys.clear();
+            for (const biz of Object.values(allData)) {
+                if (biz.isConstruction) {
+                    for (const p of biz.projects) {
+                        filterState.projectKeys.add(`${biz.bizId}::${p.pushId}`);
+                    }
+                }
+            }
+
+            renderFilters();
+            renderReport();
+        });
+
+        document.getElementById("bizSelectNone").addEventListener("click", (e) => {
+            e.preventDefault();
+            filterState.businessIds.clear();
+            filterState.projectKeys.clear();
+            renderFilters();
+            renderReport();
+        });
+
+        document.getElementById("projSelectAll").addEventListener("click", (e) => {
+            e.preventDefault();
+            for (const bizId of Object.keys(allData)) {
+                const biz = allData[bizId];
+                if (!biz.isConstruction || !isBusinessVisible(bizId)) continue;
+                for (const p of biz.projects) {
+                    filterState.projectKeys.add(`${bizId}::${p.pushId}`);
+                }
+            }
+            renderProjectFilterList();
+            renderReport();
+        });
+
+        document.getElementById("projSelectNone").addEventListener("click", (e) => {
+            e.preventDefault();
+            filterState.projectKeys.clear();
+            renderProjectFilterList();
+            renderReport();
+        });
+
+
+        function syncSegmentToggles() {
+            document.getElementById("segBills").checked    = filterState.showBills;
+            document.getElementById("segEE").checked       = filterState.showEE;
+            document.getElementById("segWorkflow").checked = filterState.showWorkflow;
+            document.getElementById("segStock").checked    = filterState.showStock;
+
+            document.getElementById("segBillsLabel").classList.toggle("checked", filterState.showBills);
+            document.getElementById("segEELabel").classList.toggle("checked", filterState.showEE);
+            document.getElementById("segWorkflowLabel").classList.toggle("checked", filterState.showWorkflow);
+            document.getElementById("segStockLabel").classList.toggle("checked", filterState.showStock);
+        }
+
+        ["segBills", "segEE", "segWorkflow", "segStock"].forEach(id => {
+            document.getElementById(id).addEventListener("change", (e) => {
+                if (id === "segBills")    filterState.showBills    = e.target.checked;
+                if (id === "segEE")       filterState.showEE       = e.target.checked;
+                if (id === "segWorkflow") filterState.showWorkflow = e.target.checked;
+                if (id === "segStock")    filterState.showStock    = e.target.checked;
+                syncSegmentToggles();
+                renderReport();
+            });
+        });
+
+
+        // =====================================================
+        // FINANCE / TOTALS HELPERS
+        // =====================================================
+
+        function computeFinances(bills, ee) {
+            const billsInRange = bills.filter(b => dateInRange(b.invoicedate));
+            const eeInRange    = ee.filter(e => dateInRange(e.date));
+
+            const sales      = billsInRange.reduce((s, b) => s + (b.grandTotal || 0), 0);
+            const billProfit = billsInRange.reduce((s, b) => s + (b.profit || 0), 0);
+
+            const earning  = eeInRange
+                .filter(e => e.type === "Earning")
+                .reduce((s, e) => s + e.amount, 0);
+
+            const expenses = eeInRange
+                .filter(e => e.type === "Expenses")
+                .reduce((s, e) => s + e.amount, 0);
+
+            const netEE     = earning - expenses;
+            const netProfit = billProfit + netEE;
+
+            return {
+                billsInRange,
+                eeInRange,
+                billCount: billsInRange.length,
+                totalBills: bills.length,
+                sales,
+                billProfit,
+                earning,
+                expenses,
+                netEE,
+                netProfit,
+                margin: sales > 0 ? (netProfit / sales) * 100 : 0
+            };
+        }
+
+        function groupStockByProduct(items) {
+            const groups = new Map();
+
+            for (const item of items) {
+                const key = String(item.name || "").trim().toLowerCase() || "_unknown_";
+
+                if (!groups.has(key)) {
+                    groups.set(key, {
+                        name: String(item.name || "—"),
+                        unit: item.unit || "",
+                        quantity: 0,
+                        purchasePrice: item.purchasePrice || 0,
+                        sellingPrice:  item.sellingPrice  || 0
+                    });
+                }
+
+                const g = groups.get(key);
+                g.quantity += item.quantity || 0;
+
+                if (!g.unit && item.unit) g.unit = item.unit;
+                if (!g.purchasePrice && item.purchasePrice) g.purchasePrice = item.purchasePrice;
+                if (!g.sellingPrice && item.sellingPrice)   g.sellingPrice  = item.sellingPrice;
+            }
+
+            const arr = Array.from(groups.values());
+            arr.forEach(g => {
+                g.cost  = g.quantity * (g.purchasePrice || 0);
+                g.value = g.quantity * (g.sellingPrice  || 0);
+            });
+
+            arr.sort((a, b) => a.name.localeCompare(b.name));
+            return arr;
+        }
+
+        function stockTotals(groupedItems) {
+            return {
+                itemCount:  groupedItems.length,
+                totalQty:   groupedItems.reduce((s, i) => s + i.quantity, 0),
+                totalCost:  groupedItems.reduce((s, i) => s + i.cost, 0),
+                totalValue: groupedItems.reduce((s, i) => s + i.value, 0),
+                lowCount:   groupedItems.filter(i => i.quantity < LOW_STOCK_THRESHOLD).length
+            };
+        }
+
+        function groupWorkflow(workflow) {
+            const groups = new Map();
+
+            workflow.forEach(w => {
+                const key = `${w.title || ""}||${w.phase || ""}`;
+
+                if (!groups.has(key)) {
+                    groups.set(key, {
+                        title: w.title || "—",
+                        phase: w.phase || "—",
+                        unit: w.unit || "",
+                        resolvedQuantity: 0,
+                        resolvedAmount: 0,
+                        boqQuantity: Number(w.boqQuantity) || 0
+                    });
+                }
+
+                const g = groups.get(key);
+                g.resolvedQuantity += Number(w.resolvedQuantity) || 0;
+                g.resolvedAmount   += Number(w.resolvedAmount) || 0;
+
+                if (w.boqQuantity) g.boqQuantity = Number(w.boqQuantity) || 0;
+                if (!g.unit && w.unit) g.unit = w.unit;
+            });
+
+            return Array.from(groups.values());
+        }
+
+        function workflowTotals(groupedWorkflow) {
+            return {
+                entryCount: groupedWorkflow.length,
+                totalQty:   groupedWorkflow.reduce((s, w) => s + w.resolvedQuantity, 0),
+                totalAmount: groupedWorkflow.reduce((s, w) => s + w.resolvedAmount, 0)
+            };
+        }
+
+
+        // =====================================================
+        // VISIBLE DATA
+        // =====================================================
+
+        function getVisibleBusinesses() {
+            return Object.values(allData)
+                .filter(b => isBusinessVisible(b.bizId))
+                .sort((a, b) => a.bizId.localeCompare(b.bizId));
+        }
+
+        function getVisibleProjects(biz) {
+            if (!biz.isConstruction) return [];
+            return biz.projects
+                .filter(p => isProjectVisible(biz.bizId, p.pushId))
+                .sort((a, b) => (a.projectId || "").localeCompare(b.projectId || ""));
+        }
+
+        function gatherAllVisibleBills() {
+            const out = [];
+            for (const biz of getVisibleBusinesses()) {
+                out.push(...biz.bills);
+                for (const p of getVisibleProjects(biz)) out.push(...p.bills);
+            }
+            return out;
+        }
+
+        function gatherAllVisibleEE() {
+            const out = [];
+            for (const biz of getVisibleBusinesses()) {
+                out.push(...biz.ee);
+                for (const p of getVisibleProjects(biz)) out.push(...p.ee);
+            }
+            return out;
+        }
+
+        function gatherAllVisibleStock() {
+            const out = [];
+            for (const biz of getVisibleBusinesses()) {
+                out.push(...biz.stock);
+                for (const p of getVisibleProjects(biz)) out.push(...p.stock);
+            }
+            return out;
+        }
+
+        function gatherAllVisibleWorkflow() {
+            const out = [];
+            for (const biz of getVisibleBusinesses()) {
+                for (const p of getVisibleProjects(biz)) out.push(...p.workflow);
+            }
+            return out;
+        }
+
+
+        // =====================================================
+        // RENDERING
+        // =====================================================
+
+        function renderReport() {
+            renderKpiCards();
+            renderTree();
+        }
+
+
+        // Shared by the on-screen cards and the PDF "Grand Totals" table
+        function buildKpiCards() {
+            const visibleBiz = getVisibleBusinesses();
+            const visibleProjects = visibleBiz.reduce(
+                (s, b) => s + getVisibleProjects(b).length, 0
+            );
+
+            const cards = [];
+
+            cards.push({
+                label: "Businesses",
+                value: visibleBiz.length,
+                sub: `${visibleProjects} project${visibleProjects === 1 ? "" : "s"}`,
+                cls: ""
+            });
+
+            if (filterState.showBills || filterState.showEE) {
+                const fin = computeFinances(
+                    filterState.showBills ? gatherAllVisibleBills() : [],
+                    filterState.showEE    ? gatherAllVisibleEE()    : []
+                );
+
+                if (filterState.showBills) {
+                    cards.push({
+                        label: "Bills in Range",
+                        value: fin.billCount,
+                        sub: `of ${fin.totalBills} total`,
+                        cls: ""
+                    });
+                    cards.push({
+                        label: "Total Sales",
+                        value: moneyShort(fin.sales),
+                        sub: "in selected range",
+                        cls: "text-success"
+                    });
+                }
+
+                if (filterState.showEE) {
+                    cards.push({
+                        label: "Earning",
+                        value: moneyShort(fin.earning),
+                        sub: "+ to profit",
+                        cls: "text-success"
+                    });
+                    cards.push({
+                        label: "Expenses",
+                        value: moneyShort(fin.expenses),
+                        sub: "− from profit",
+                        cls: "text-danger"
+                    });
+                }
+
+                cards.push({
+                    label: "Net Profit",
+                    value: moneyShort(fin.netProfit),
+                    sub: `${fin.margin.toFixed(1)}% margin`,
+                    cls: fin.netProfit >= 0 ? "text-warning" : "text-danger"
+                });
+            }
+
+            if (filterState.showWorkflow) {
+                const wt = workflowTotals(groupWorkflow(gatherAllVisibleWorkflow()));
+                cards.push({
+                    label: "Workflow Entries",
+                    value: wt.entryCount,
+                    sub: "resolved records",
+                    cls: "text-purple"
+                });
+                cards.push({
+                    label: "Workflow Amount",
+                    value: moneyShort(wt.totalAmount),
+                    sub: `${qtyShort(wt.totalQty)} qty resolved`,
+                    cls: "text-purple"
+                });
+            }
+
+            if (filterState.showStock) {
+                const st = stockTotals(groupStockByProduct(gatherAllVisibleStock()));
+                cards.push({
+                    label: "Stock Items",
+                    value: st.itemCount,
+                    sub: `${qtyShort(st.totalQty)} total qty`,
+                    cls: "text-teal"
+                });
+                cards.push({
+                    label: "Stock Value",
+                    value: moneyShort(st.totalValue),
+                    sub: st.lowCount > 0
+                        ? `${st.lowCount} low stock`
+                        : `cost ${moneyShort(st.totalCost)}`,
+                    cls: st.lowCount > 0 ? "text-danger" : "text-teal"
+                });
+            }
+
+            return cards;
+        }
+
+
+        function renderKpiCards() {
+            kpiRow.innerHTML = "";
+
+            buildKpiCards().forEach(c => {
+                const col = document.createElement("div");
+                col.className = "col-6 col-md-4 col-lg-3";
+                col.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-label">${escapeHtml(c.label)}</div>
+                        <div class="summary-value ${c.cls || ""}">${escapeHtml(String(c.value))}</div>
+                        <div class="summary-sub">${escapeHtml(c.sub || "")}</div>
+                    </div>
+                `;
+                kpiRow.appendChild(col);
+            });
+        }
+
+
+        function renderTree() {
+            reportTree.innerHTML = "";
+
+            const visibleBiz = getVisibleBusinesses();
+
+            if (!visibleBiz.length) {
+                emptyState.classList.remove("d-none");
+                emptyState.querySelector("div").textContent =
+                    "No businesses match the current filters.";
+                return;
+            }
+
+            let anyRendered = false;
+
+            for (const biz of visibleBiz) {
+                const node = renderBusinessNode(biz);
+                if (node) {
+                    reportTree.appendChild(node);
+                    anyRendered = true;
+                }
+            }
+
+            if (!anyRendered) {
+                emptyState.classList.remove("d-none");
+                emptyState.querySelector("div").textContent =
+                    "Nothing to display with the current filters.";
+            } else {
+                emptyState.classList.add("d-none");
+            }
+        }
+
+
+        function renderBusinessNode(biz) {
+            const visibleProjects = getVisibleProjects(biz);
+
+            const bizFin = (filterState.showBills || filterState.showEE)
+                ? computeFinances(
+                    filterState.showBills ? biz.bills : [],
+                    filterState.showEE    ? biz.ee    : []
+                  )
+                : null;
+
+            const bizStockGrouped = filterState.showStock
+                ? groupStockByProduct(biz.stock)
+                : [];
+
+            const hasBizBills = filterState.showBills && bizFin && bizFin.billCount > 0;
+            const hasBizEE    = filterState.showEE    && bizFin && bizFin.eeInRange.length > 0;
+            const hasBizStock = filterState.showStock && bizStockGrouped.length > 0;
+            const hasProjects = biz.isConstruction && visibleProjects.length > 0;
+
+            if (!hasBizBills && !hasBizEE && !hasBizStock && !hasProjects) return null;
+
+            // Combined totals (business + projects)
+            const projectBills = visibleProjects.flatMap(p => p.bills);
+            const projectEE    = visibleProjects.flatMap(p => p.ee);
+            const projectStock = visibleProjects.flatMap(p => p.stock);
+
+            const combinedFin = (filterState.showBills || filterState.showEE)
+                ? computeFinances(
+                    filterState.showBills ? [...biz.bills, ...projectBills] : [],
+                    filterState.showEE    ? [...biz.ee,    ...projectEE]    : []
+                  )
+                : null;
+
             const wrap = document.createElement("div");
-            wrap.className = "tree-business open";     // default expanded
+            wrap.className = "tree-business open";
 
-            const t = b.totals;
-
-            const profitClass =
-                t.profit > 0 ? "green" :
-                t.profit < 0 ? "text-danger" : "";
-
-            const constructionTag = b.isConstruction
+            const constructionTag = biz.isConstruction
                 ? `<span class="construction-tag"><i class="bi bi-cone-striped me-1"></i>Construction</span>`
                 : "";
+
+            const kpiStripParts = [];
+
+            if (combinedFin) {
+                if (filterState.showBills) {
+                    kpiStripParts.push(`
+                        <span class="mini-kpi">
+                            Bills: <strong>${combinedFin.billCount}</strong>
+                        </span>
+                        <span class="mini-kpi green">
+                            Sales: <strong>${moneyShort(combinedFin.sales)}</strong>
+                        </span>
+                    `);
+                }
+                if (filterState.showEE) {
+                    kpiStripParts.push(`
+                        <span class="mini-kpi green">
+                            Earn: <strong>${moneyShort(combinedFin.earning)}</strong>
+                        </span>
+                        <span class="mini-kpi red">
+                            Exp: <strong>${moneyShort(combinedFin.expenses)}</strong>
+                        </span>
+                    `);
+                }
+                kpiStripParts.push(`
+                    <span class="mini-kpi amber">
+                        Net: <strong>${moneyShort(combinedFin.netProfit)}</strong>
+                    </span>
+                `);
+            }
+
+            if (filterState.showStock) {
+                const allStockGrouped = groupStockByProduct([...biz.stock, ...projectStock]);
+                const allSt = stockTotals(allStockGrouped);
+                kpiStripParts.push(`
+                    <span class="mini-kpi teal">
+                        Stock: <strong>${qtyShort(allSt.totalQty)}</strong>
+                    </span>
+                `);
+            }
+
+            if (biz.isConstruction) {
+                kpiStripParts.push(`
+                    <span class="mini-kpi">
+                        Projects: <strong>${visibleProjects.length}</strong>
+                    </span>
+                `);
+            }
 
             wrap.innerHTML = `
                 <div class="tree-business-header">
@@ -946,334 +1608,1131 @@
                         <i class="bi bi-chevron-right tree-toggle-icon"></i>
                         <div class="biz-title">
                             <i class="bi bi-building text-primary"></i>
-                            ${escapeHtml(b.bizName)}
-                            <span class="biz-id">(${escapeHtml(b.bizId)})</span>
+                            ${escapeHtml(biz.bizName)}
+                            <span class="biz-id">(${escapeHtml(biz.bizId)})</span>
                             ${constructionTag}
                         </div>
                     </div>
-
                     <div class="tree-kpi-strip">
-                        <span class="mini-kpi">
-                            Bills: <strong>${t.billCount}</strong>
-                        </span>
-                        <span class="mini-kpi green">
-                            Sales: <strong>${moneyShort(t.sales)}</strong>
-                        </span>
-                        <span class="mini-kpi amber">
-                            Profit: <strong>${moneyShort(t.profit)}</strong>
-                        </span>
-                        <span class="mini-kpi purple">
-                            Today: <strong>${b.attendance.present}/${b.attendance.total}</strong>
-                        </span>
-                        ${b.projects.length
-                            ? `<span class="mini-kpi">
-                                    Projects: <strong>${b.projects.length}</strong>
-                               </span>`
-                            : ""}
+                        ${kpiStripParts.join("")}
                     </div>
                 </div>
-
-                <div class="tree-business-body">
-                    ${renderBusinessDetail(b)}
-                </div>
+                <div class="tree-business-body"></div>
             `;
 
-            const header = wrap.querySelector(".tree-business-header");
-            header.addEventListener("click", (e) => {
-                // ignore clicks on links / buttons inside header
+            wrap.querySelector(".tree-business-header").addEventListener("click", (e) => {
                 if (e.target.closest("a, button")) return;
                 wrap.classList.toggle("open");
             });
+
+            const body = wrap.querySelector(".tree-business-body");
+
+            // Business-level sections
+            if (hasBizBills) body.appendChild(renderBillsSection(bizFin, "Business-level Bills"));
+
+            if (hasBizEE) {
+                body.appendChild(
+                    renderExpensesEarningsSection(bizFin.eeInRange, "Business-level Expenses & Earnings")
+                );
+            }
+
+            if (hasBizStock) body.appendChild(renderStockSection(bizStockGrouped, "Business-level Stock"));
+
+            // Projects
+            if (biz.isConstruction) {
+                if (!visibleProjects.length) {
+                    if (hasBizBills || hasBizEE || hasBizStock) {
+                        const note = document.createElement("div");
+                        note.className = "no-project-note";
+                        note.innerHTML = `<i class="bi bi-info-circle me-1"></i>No projects match the current project filter.`;
+                        body.appendChild(note);
+                    }
+                } else {
+                    for (const p of visibleProjects) {
+                        const block = renderProjectNode(biz, p);
+                        if (block) body.appendChild(block);
+                    }
+                }
+            }
 
             return wrap;
         }
 
 
-        function renderBusinessDetail(b) {
+        function renderProjectNode(biz, proj) {
+            const fin = (filterState.showBills || filterState.showEE)
+                ? computeFinances(
+                    filterState.showBills ? proj.bills : [],
+                    filterState.showEE    ? proj.ee    : []
+                  )
+                : null;
 
-            const t = b.totals;
+            const stockGrouped = filterState.showStock
+                ? groupStockByProduct(proj.stock)
+                : [];
 
-            // Summary stats block
-            const summaryStats = `
-                <div class="proj-stats mb-3">
-                    <div class="proj-stat">
-                        <div class="ps-label">Bills in range</div>
-                        <div class="ps-value">${t.billCount}</div>
-                        <div class="ps-sub">of ${t.totalBills} total</div>
-                    </div>
-                    <div class="proj-stat">
-                        <div class="ps-label">Total Sales</div>
-                        <div class="ps-value text-success">${money(t.sales)}</div>
-                        <div class="ps-sub">in selected range</div>
-                    </div>
-                    <div class="proj-stat">
-                        <div class="ps-label">Total Profit</div>
-                        <div class="ps-value ${t.profit >= 0 ? "text-success" : "text-danger"}">
-                            ${money(t.profit)}
-                        </div>
-                        <div class="ps-sub">${t.margin.toFixed(1)}% margin</div>
-                    </div>
-                    <div class="proj-stat">
-                        <div class="ps-label">Attendance Today</div>
-                        <div class="ps-value">${b.attendance.present}/${b.attendance.total}</div>
-                        <div class="ps-sub">present / marked</div>
-                    </div>
+            const workflowGrouped = filterState.showWorkflow
+                ? groupWorkflow(proj.workflow)
+                : [];
+
+            const workflowTot = workflowTotals(workflowGrouped);
+            const stockTot    = stockTotals(stockGrouped);
+
+            const hasBills    = filterState.showBills    && fin && fin.billCount > 0;
+            const hasEE       = filterState.showEE       && fin && fin.eeInRange.length > 0;
+            const hasWorkflow = filterState.showWorkflow && workflowGrouped.length > 0;
+            const hasStock    = filterState.showStock    && stockGrouped.length > 0;
+
+            if (!hasBills && !hasEE && !hasWorkflow && !hasStock) return null;
+
+            const block = document.createElement("div");
+            block.className = "project-block";
+
+            const header = document.createElement("div");
+            header.className = "project-block-header";
+            header.innerHTML = `
+                <div class="proj-title">
+                    <i class="bi bi-cone-striped text-warning"></i>
+                    ${escapeHtml(proj.projectName || "Untitled project")}
+                    ${proj.projectId
+                        ? `<span class="proj-id">${escapeHtml(proj.projectId)}</span>`
+                        : ""}
                 </div>
             `;
+            block.appendChild(header);
 
-            // Top-level bills table (non-construction or extra bills)
-            let topBillsHtml = "";
+            const stats = document.createElement("div");
+            stats.className = "proj-stats";
 
-            const topBillsInRange = b.bills.filter(x => dateInRange(x.invoicedate));
+            const statParts = [];
 
-            if (topBillsInRange.length > 0) {
-                const rows = topBillsInRange
-                    .sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0))
-                    .slice(0, 10)
-                    .map(bill => `
-                        <tr>
-                            <td>${escapeHtml(bill.invoicenumber || "—")}</td>
-                            <td>${escapeHtml(bill.invoicedate || "—")}</td>
-                            <td>${escapeHtml(bill.billType || "—")}</td>
-                            <td class="num">${bill.grandTotal.toFixed(2)}</td>
-                            <td class="num ${bill.profit >= 0 ? "text-success" : "text-danger"}">
-                                ${bill.profit.toFixed(2)}
-                            </td>
-                        </tr>
-                    `)
-                    .join("");
-
-                topBillsHtml = `
-                    <div class="mt-2">
-                        <div class="section-title mb-1" style="font-size: 0.72rem;">
-                            <i class="bi bi-receipt me-1"></i>
-                            Business-level Bills (top ${Math.min(10, topBillsInRange.length)})
-                        </div>
-                        <table class="workflow-table">
-                            <thead>
-                                <tr>
-                                    <th>Invoice #</th>
-                                    <th>Date</th>
-                                    <th>Bill Type</th>
-                                    <th class="text-end">Amount</th>
-                                    <th class="text-end">Profit</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
+            if (filterState.showBills && fin) {
+                statParts.push(`
+                    <div class="proj-stat">
+                        <div class="ps-label">Bills in range</div>
+                        <div class="ps-value">${fin.billCount}</div>
+                        <div class="ps-sub">of ${fin.totalBills} total</div>
                     </div>
-                `;
+                    <div class="proj-stat">
+                        <div class="ps-label">Sales</div>
+                        <div class="ps-value text-success">${money(fin.sales)}</div>
+                        <div class="ps-sub">this project</div>
+                    </div>
+                `);
             }
 
-            // Projects section
-            let projectsHtml = "";
-
-            if (b.isConstruction) {
-                if (!b.projects.length) {
-                    projectsHtml = `
-                        <div class="no-project-note">
-                            <i class="bi bi-info-circle me-1"></i>
-                            No projects defined for this business yet.
+            if (filterState.showEE && fin) {
+                statParts.push(`
+                    <div class="proj-stat">
+                        <div class="ps-label">Earning / Expenses</div>
+                        <div class="ps-value">
+                            <span class="text-success">+${moneyShort(fin.earning)}</span>
+                            <span class="text-muted"> / </span>
+                            <span class="text-danger">−${moneyShort(fin.expenses)}</span>
                         </div>
-                    `;
-                } else {
-                    projectsHtml = b.projects
-                        .sort((x, y) => x.projectId.localeCompare(y.projectId))
-                        .map(p => renderProjectBlock(p))
-                        .join("");
-                }
-            } else {
-                projectsHtml = `
-                    <div class="no-project-note">
-                        <i class="bi bi-info-circle me-1"></i>
-                        This business is not configured as a construction business,
-                        so it has no projects.
+                        <div class="ps-sub">adjusts profit</div>
                     </div>
-                `;
+                `);
             }
 
-            return summaryStats + topBillsHtml + projectsHtml;
+            if (fin) {
+                statParts.push(`
+                    <div class="proj-stat">
+                        <div class="ps-label">Net Profit</div>
+                        <div class="ps-value ${fin.netProfit >= 0 ? "text-success" : "text-danger"}">
+                            ${money(fin.netProfit)}
+                        </div>
+                        <div class="ps-sub">${fin.margin.toFixed(1)}% margin</div>
+                    </div>
+                `);
+            }
+
+            if (filterState.showWorkflow) {
+                statParts.push(`
+                    <div class="proj-stat">
+                        <div class="ps-label">Workflow</div>
+                        <div class="ps-value">${workflowGrouped.length}</div>
+                        <div class="ps-sub">${moneyShort(workflowTot.totalAmount)}</div>
+                    </div>
+                `);
+            }
+
+            if (filterState.showStock) {
+                statParts.push(`
+                    <div class="proj-stat">
+                        <div class="ps-label">Stock Items</div>
+                        <div class="ps-value ${stockTot.lowCount > 0 ? "text-danger" : ""}">
+                            ${stockTot.itemCount}
+                        </div>
+                        <div class="ps-sub">
+                            ${qtyShort(stockTot.totalQty)} qty
+                            ${stockTot.lowCount > 0 ? ` · ${stockTot.lowCount} low` : ""}
+                        </div>
+                    </div>
+                `);
+            }
+
+            stats.innerHTML = statParts.join("");
+            block.appendChild(stats);
+
+            if (hasBills) block.appendChild(renderBillsSection(fin, "Project Bills"));
+            if (hasEE)    block.appendChild(renderExpensesEarningsSection(fin.eeInRange, "Expenses & Earnings"));
+            if (hasWorkflow) block.appendChild(renderWorkflowSection(workflowGrouped, workflowTot));
+            if (hasStock) block.appendChild(renderStockSection(stockGrouped, "Project Stock"));
+
+            return block;
         }
 
 
-        function renderProjectBlock(p) {
-            const inRange = p.bills.filter(x => dateInRange(x.invoicedate));
+        function renderBillsSection(fin, label) {
+            const wrap = document.createElement("div");
+            wrap.className = "segment-section";
 
-            const sales  = inRange.reduce((s, b) => s + (b.grandTotal || 0), 0);
-            const profit = inRange.reduce((s, b) => s + (b.profit || 0), 0);
-            const margin = sales > 0 ? (profit / sales) * 100 : 0;
+            const header = document.createElement("div");
+            header.className = "segment-header";
+            header.innerHTML = `
+                <div><i class="bi bi-receipt me-1"></i>${escapeHtml(label)}</div>
+                <div class="seg-summary">
+                    ${fin.billCount} bill${fin.billCount === 1 ? "" : "s"} &nbsp;·&nbsp;
+                    Sales ${moneyShort(fin.sales)} &nbsp;·&nbsp;
+                    Profit ${moneyShort(fin.billProfit)}
+                </div>
+            `;
+            wrap.appendChild(header);
 
-            // ---- Workflow aggregated by title + phase ----
-            let workflowHtml = "";
+            const body = document.createElement("div");
+            body.className = "segment-body";
 
-            if (p.workflow.length) {
+            const sorted = [...fin.billsInRange]
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-                // Group by title + phase
-                const groups = new Map();
+            if (!sorted.length) {
+                body.innerHTML = `<div class="segment-empty">No bills in the selected date range.</div>`;
+            } else {
+                const rows = sorted.map(bill => `
+                    <tr>
+                        <td>${escapeHtml(bill.invoicenumber || "—")}</td>
+                        <td>${escapeHtml(bill.invoicedate || "—")}</td>
+                        <td>${escapeHtml(bill.billType || "—")}</td>
+                        <td class="num">${bill.grandTotal.toFixed(2)}</td>
+                        <td class="num ${bill.profit >= 0 ? "text-success" : "text-danger"}">
+                            ${bill.profit.toFixed(2)}
+                        </td>
+                    </tr>
+                `).join("");
 
-                p.workflow.forEach(w => {
-                    const key = `${w.title}||${w.phase}`;
-                    if (!groups.has(key)) {
-                        groups.set(key, {
-                            title: w.title || "—",
-                            phase: w.phase || "—",
-                            unit: w.unit || "",
-                            resolvedQty: 0,
-                            resolvedAmt: 0,
-                            boqQty: w.boqQuantity || 0
-                        });
-                    }
-                    const g = groups.get(key);
-                    g.resolvedQty += w.resolvedQuantity;
-                    g.resolvedAmt += w.resolvedAmount;
-                    if (w.boqQuantity) g.boqQty = w.boqQuantity;
-                });
+                body.innerHTML = `
+                    <table class="workflow-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Bill Type</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            }
 
-                const rows = Array.from(groups.values()).map(g => {
-                    const pct = g.boqQty > 0
-                        ? Math.min(100, (g.resolvedQty / g.boqQty) * 100)
+            wrap.appendChild(body);
+            return wrap;
+        }
+
+
+        function renderExpensesEarningsSection(eeInRange, label) {
+            const wrap = document.createElement("div");
+            wrap.className = "segment-section";
+
+            const earning  = eeInRange
+                .filter(e => e.type === "Earning")
+                .reduce((s, e) => s + e.amount, 0);
+
+            const expenses = eeInRange
+                .filter(e => e.type === "Expenses")
+                .reduce((s, e) => s + e.amount, 0);
+
+            const net = earning - expenses;
+
+            const header = document.createElement("div");
+            header.className = "segment-header";
+            header.innerHTML = `
+                <div><i class="bi bi-cash-coin me-1"></i>${escapeHtml(label)}</div>
+                <div class="seg-summary">
+                    <span class="text-success">+${moneyShort(earning)}</span>
+                    &nbsp;·&nbsp;
+                    <span class="text-danger">−${moneyShort(expenses)}</span>
+                    &nbsp;·&nbsp;
+                    Net ${moneyShort(net)}
+                </div>
+            `;
+            wrap.appendChild(header);
+
+            const body = document.createElement("div");
+            body.className = "segment-body";
+
+            if (!eeInRange.length) {
+                body.innerHTML = `<div class="segment-empty">No expenses or earnings in the selected date range.</div>`;
+            } else {
+                const sorted = [...eeInRange].sort((a, b) => b.date.localeCompare(a.date));
+
+                const rows = sorted.map(e => {
+                    const isEarning = e.type === "Earning";
+                    const sign = isEarning ? "+" : "−";
+                    const cls  = isEarning ? "text-success" : "text-danger";
+
+                    return `
+                        <tr>
+                            <td>${escapeHtml(e.date || "—")}</td>
+                            <td>
+                                <span class="ee-pill ${isEarning ? "earning" : "expenses"}">
+                                    ${escapeHtml(e.type)}
+                                </span>
+                            </td>
+                            <td>${escapeHtml(e.title || "—")}</td>
+                            <td class="num ${cls} fw-semibold">
+                                ${sign}${e.amount.toFixed(2)}
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+
+                body.innerHTML = `
+                    <table class="workflow-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            }
+
+            wrap.appendChild(body);
+            return wrap;
+        }
+
+
+        function renderWorkflowSection(groupedWorkflow, totals) {
+            const wrap = document.createElement("div");
+            wrap.className = "segment-section";
+
+            const header = document.createElement("div");
+            header.className = "segment-header";
+            header.innerHTML = `
+                <div><i class="bi bi-diagram-3 me-1"></i>Workflow — Resolved Work by Phase</div>
+                <div class="seg-summary">
+                    ${groupedWorkflow.length} group${groupedWorkflow.length === 1 ? "" : "s"} &nbsp;·&nbsp;
+                    Amount ${moneyShort(totals.totalAmount)}
+                </div>
+            `;
+            wrap.appendChild(header);
+
+            const body = document.createElement("div");
+            body.className = "segment-body";
+
+            if (!groupedWorkflow.length) {
+                body.innerHTML = `<div class="segment-empty">No workflow (resolved measurement) entries yet.</div>`;
+            } else {
+                const rows = groupedWorkflow.map(g => {
+                    const pct = g.boqQuantity > 0
+                        ? Math.min(100, (g.resolvedQuantity / g.boqQuantity) * 100)
                         : 0;
 
                     return `
                         <tr>
                             <td>${escapeHtml(g.title)}</td>
-                            <td>
-                                <span class="phase-pill">${escapeHtml(g.phase)}</span>
-                            </td>
+                            <td><span class="phase-pill">${escapeHtml(g.phase)}</span></td>
                             <td class="num">
-                                ${g.resolvedQty}${g.unit ? " " + escapeHtml(g.unit) : ""}
-                                ${g.boqQty > 0
+                                ${qtyShort(g.resolvedQuantity)}${g.unit ? " " + escapeHtml(g.unit) : ""}
+                                ${g.boqQuantity > 0
                                     ? `<div class="ps-sub text-muted" style="font-size:0.68rem;">
-                                            of ${g.boqQty}
+                                            of ${qtyShort(g.boqQuantity)}
                                        </div>
                                        <div class="progress-bar-thin">
                                            <div style="width:${pct}%"></div>
                                        </div>`
                                     : ""}
                             </td>
-                            <td class="num">${g.resolvedAmt.toFixed(2)}</td>
+                            <td class="num">${g.resolvedAmount.toFixed(2)}</td>
                         </tr>
                     `;
                 }).join("");
 
-                workflowHtml = `
-                    <div class="mt-2">
-                        <div class="section-title mb-1" style="font-size: 0.72rem;">
-                            <i class="bi bi-diagram-3 me-1"></i>
-                            Workflow — Resolved Work by Phase
-                        </div>
-                        <table class="workflow-table">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Phase</th>
-                                    <th class="text-end">Quantity Resolved</th>
-                                    <th class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
-                `;
-            } else {
-                workflowHtml = `
-                    <div class="no-project-note">
-                        <i class="bi bi-info-circle me-1"></i>
-                        No workflow (resolved measurement) entries yet.
-                    </div>
+                body.innerHTML = `
+                    <table class="workflow-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Phase</th>
+                                <th class="text-end">Quantity Resolved</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
                 `;
             }
 
-            // ---- Bills for this project ----
-            let billsHtml = "";
+            wrap.appendChild(body);
+            return wrap;
+        }
 
-            if (inRange.length) {
-                const rows = inRange
-                    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-                    .slice(0, 8)
-                    .map(bill => `
-                        <tr>
-                            <td>${escapeHtml(bill.invoicenumber || "—")}</td>
-                            <td>${escapeHtml(bill.invoicedate || "—")}</td>
-                            <td>${escapeHtml(bill.billType || "—")}</td>
-                            <td class="num">${bill.grandTotal.toFixed(2)}</td>
-                            <td class="num ${bill.profit >= 0 ? "text-success" : "text-danger"}">
-                                ${bill.profit.toFixed(2)}
-                            </td>
-                        </tr>
-                    `)
-                    .join("");
 
-                billsHtml = `
-                    <div class="mt-2">
-                        <div class="section-title mb-1" style="font-size: 0.72rem;">
-                            <i class="bi bi-receipt me-1"></i>
-                            Project Bills (top ${Math.min(8, inRange.length)})
-                        </div>
-                        <table class="workflow-table">
-                            <thead>
-                                <tr>
-                                    <th>Invoice #</th>
-                                    <th>Date</th>
-                                    <th>Bill Type</th>
-                                    <th class="text-end">Amount</th>
-                                    <th class="text-end">Profit</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
-                `;
-            }
+        function renderStockSection(groupedStock, label) {
+            const wrap = document.createElement("div");
+            wrap.className = "segment-section";
 
-            return `
-                <div class="project-block">
-                    <div class="project-block-header">
-                        <div class="proj-title">
-                            <i class="bi bi-cone-striped text-warning"></i>
-                            ${escapeHtml(p.projectName || "Untitled project")}
-                            ${p.projectId
-                                ? `<span class="proj-id">${escapeHtml(p.projectId)}</span>`
-                                : ""}
-                        </div>
-                    </div>
+            const totals = stockTotals(groupedStock);
 
-                    <div class="proj-stats">
-                        <div class="proj-stat">
-                            <div class="ps-label">Bills in range</div>
-                            <div class="ps-value">${inRange.length}</div>
-                            <div class="ps-sub">of ${p.bills.length} total</div>
-                        </div>
-                        <div class="proj-stat">
-                            <div class="ps-label">Sales</div>
-                            <div class="ps-value text-success">${money(sales)}</div>
-                            <div class="ps-sub">this project</div>
-                        </div>
-                        <div class="proj-stat">
-                            <div class="ps-label">Profit</div>
-                            <div class="ps-value ${profit >= 0 ? "text-success" : "text-danger"}">
-                                ${money(profit)}
-                            </div>
-                            <div class="ps-sub">${margin.toFixed(1)}% margin</div>
-                        </div>
-                        <div class="proj-stat">
-                            <div class="ps-label">Attendance Today</div>
-                            <div class="ps-value">
-                                ${p.attendance.present || 0}/${p.attendance.total || 0}
-                            </div>
-                            <div class="ps-sub">present / marked</div>
-                        </div>
-                        <div class="proj-stat">
-                            <div class="ps-label">Workflow Entries</div>
-                            <div class="ps-value">${p.workflow.length}</div>
-                            <div class="ps-sub">resolved records</div>
-                        </div>
-                    </div>
-
-                    ${workflowHtml}
-                    ${billsHtml}
+            const header = document.createElement("div");
+            header.className = "segment-header";
+            header.innerHTML = `
+                <div><i class="bi bi-box-seam me-1"></i>${escapeHtml(label)}</div>
+                <div class="seg-summary">
+                    ${totals.itemCount} product${totals.itemCount === 1 ? "" : "s"} &nbsp;·&nbsp;
+                    Qty ${qtyShort(totals.totalQty)} &nbsp;·&nbsp;
+                    Value ${moneyShort(totals.totalValue)}
+                    ${totals.lowCount > 0
+                        ? ` &nbsp;·&nbsp; <span class="text-danger">${totals.lowCount} low stock</span>`
+                        : ""}
                 </div>
             `;
+            wrap.appendChild(header);
+
+            const body = document.createElement("div");
+            body.className = "segment-body";
+
+            if (!groupedStock.length) {
+                body.innerHTML = `<div class="segment-empty">No products in stock for this scope.</div>`;
+            } else {
+                const rows = groupedStock.map(g => {
+                    const isLow = g.quantity < LOW_STOCK_THRESHOLD;
+
+                    return `
+                        <tr class="${isLow ? "stock-low" : ""}">
+                            <td>${escapeHtml(g.name)}</td>
+                            <td>${escapeHtml(g.unit || "—")}</td>
+                            <td class="num">
+                                ${qtyShort(g.quantity)}
+                                ${isLow
+                                    ? `<span class="badge bg-danger ms-1" title="Below ${LOW_STOCK_THRESHOLD}">Low</span>`
+                                    : ""}
+                            </td>
+                            <td class="num">${g.purchasePrice ? g.purchasePrice.toFixed(2) : "—"}</td>
+                            <td class="num">${g.sellingPrice  ? g.sellingPrice.toFixed(2)  : "—"}</td>
+                            <td class="num fw-semibold">${g.value.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join("");
+
+                body.innerHTML = `
+                    <table class="workflow-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Unit</th>
+                                <th class="text-end">Total Quantity</th>
+                                <th class="text-end">Purchase</th>
+                                <th class="text-end">Selling</th>
+                                <th class="text-end">Stock Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            }
+
+            wrap.appendChild(body);
+            return wrap;
+        }
+
+
+        // =====================================================
+        // PDF EXPORT
+        //
+        // Built directly with jsPDF + autoTable instead of taking
+        // a screenshot of the page. Result: one real table per
+        // segment (Bills / Expenses & Earnings / Workflow / Stock),
+        // rows grouped by business / project with subtotals, header
+        // row repeated on every page, selectable text, small file.
+        // =====================================================
+
+        const PDF = {
+            margin: { left: 10, right: 10, top: 16, bottom: 14 },
+            c: {
+                bills:    [13, 110, 253],
+                ee:       [180, 83, 9],
+                workflow: [111, 66, 193],
+                stock:    [15, 118, 110],
+                ink:      [30, 41, 59],
+                muted:    [100, 116, 139],
+                line:     [226, 232, 240],
+                group:    [226, 232, 240],
+                subtotal: [241, 245, 249],
+                low:      [248, 215, 218],
+                green:    [25, 135, 84],
+                red:      [220, 53, 69]
+            }
+        };
+
+        // jsPDF's built-in fonts only cover Latin-1. Normalise typographic
+        // characters and replace anything outside Latin-1 with "?".
+        function pdfText(v) {
+            return String(v ?? "")
+                .replace(/\s+/g, " ")
+                .replace(/[\u2010-\u2015\u2212]/g, "-")
+                .replace(/[\u2018\u2019]/g, "'")
+                .replace(/[\u201C\u201D]/g, '"')
+                .replace(/\u2026/g, "...")
+                .replace(/[^\x20-\x7E\xA0-\xFF]/g, "?")
+                .trim();
+        }
+
+        function fmt2(n) {
+            const v = Number(n) || 0;
+            try {
+                return v.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            } catch {
+                return v.toFixed(2);
+            }
+        }
+
+        const shortMoney = n => moneyShort(n).replace(/^Rs\s/, "");
+        const plural     = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+        const hcell      = (content, halign = "left") => ({ content, styles: { halign } });
+        const cell       = (content, styles = {}) => ({ content, styles });
+
+        // Bold shaded row: label spans `span` columns, then value cells (right aligned)
+        function summaryRow(span, label, values, style = {}) {
+            const base = {
+                fontStyle: "bold",
+                fillColor: PDF.c.subtotal,
+                textColor: PDF.c.ink,
+                ...style
+            };
+            return [
+                { content: pdfText(label), colSpan: span, styles: { ...base, halign: "left" } },
+                ...values.map(v =>
+                    (v && typeof v === "object")
+                        ? { content: v.content, styles: { ...base, halign: "right", ...v.styles } }
+                        : { content: v, styles: { ...base, halign: "right" } }
+                )
+            ];
+        }
+
+        const totalRow = (span, label, values) =>
+            summaryRow(span, label, values, { fillColor: PDF.c.ink, textColor: [255, 255, 255] });
+
+        function pdfTableBase(headColor) {
+            const m = PDF.margin;
+            return {
+                theme: "grid",
+                margin: { left: m.left, right: m.right, top: m.top, bottom: m.bottom },
+                styles: {
+                    font: "helvetica",
+                    fontSize: 8,
+                    cellPadding: 1.6,
+                    lineColor: PDF.c.line,
+                    lineWidth: 0.1,
+                    textColor: PDF.c.ink,
+                    valign: "middle",
+                    overflow: "linebreak"
+                },
+                headStyles: {
+                    fillColor: headColor,
+                    textColor: [255, 255, 255],
+                    fontStyle: "bold",
+                    fontSize: 8
+                },
+                showHead: "everyPage",
+                rowPageBreak: "avoid"
+            };
+        }
+
+        // Coloured bar with a title (and optional right-hand summary)
+        function pdfHeading(doc, y, title, color, rightText = "") {
+            const m = PDF.margin;
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+
+            // keep the bar together with at least the first rows of its table
+            if (y + 40 > pageH - m.bottom) {
+                doc.addPage();
+                y = m.top;
+            }
+
+            doc.setFillColor(...color);
+            doc.roundedRect(m.left, y, pageW - m.left - m.right, 7, 1, 1, "F");
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255);
+            doc.text(pdfText(title), m.left + 3, y + 4.9);
+
+            if (rightText) {
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.text(pdfText(rightText), pageW - m.right - 3, y + 4.8, { align: "right" });
+            }
+
+            return y + 9;
+        }
+
+        function activeSegmentsLabel() {
+            const parts = [];
+            if (filterState.showBills)    parts.push("Bills");
+            if (filterState.showEE)       parts.push("Expenses & Earnings");
+            if (filterState.showWorkflow) parts.push("Workflow");
+            if (filterState.showStock)    parts.push("Stock");
+            return parts.join(", ") || "-";
+        }
+
+
+        // ---------- scopes: every business-level / project-level bucket ----------
+
+        function collectScopes() {
+            const scopes = [];
+
+            for (const biz of getVisibleBusinesses()) {
+                scopes.push({
+                    label: `${biz.bizName} (${biz.bizId}) - Business level`,
+                    bills: biz.bills,
+                    ee: biz.ee,
+                    stock: biz.stock,
+                    workflow: []
+                });
+
+                for (const p of getVisibleProjects(biz)) {
+                    scopes.push({
+                        label: `${biz.bizName} > ${p.projectName || "Untitled project"}`
+                             + (p.projectId ? ` [${p.projectId}]` : ""),
+                        bills: p.bills,
+                        ee: p.ee,
+                        stock: p.stock,
+                        workflow: p.workflow
+                    });
+                }
+            }
+
+            return scopes;
+        }
+
+
+        // ---------- segment builders ----------
+        // Each returns { title, color, summary, head, columnStyles, groups[], total }
+
+        function buildBillsSegment(scopes) {
+            const groups = [];
+            let count = 0, sales = 0, profit = 0;
+
+            for (const s of scopes) {
+                const f = computeFinances(s.bills, []);
+                if (!f.billCount) continue;
+
+                const bills = [...f.billsInRange]
+                    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                count  += f.billCount;
+                sales  += f.sales;
+                profit += f.billProfit;
+
+                groups.push({
+                    label: s.label,
+                    rows: bills.map(b => [
+                        pdfText(b.invoicenumber || "-"),
+                        pdfText(b.invoicedate || "-"),
+                        pdfText(b.billType || "-"),
+                        fmt2(b.grandTotal),
+                        cell(fmt2(b.profit), { textColor: b.profit < 0 ? PDF.c.red : PDF.c.green })
+                    ]),
+                    subtotal: summaryRow(
+                        3,
+                        `Subtotal - ${plural(f.billCount, "bill")}`,
+                        [
+                            fmt2(f.sales),
+                            cell(fmt2(f.billProfit), { textColor: f.billProfit < 0 ? PDF.c.red : PDF.c.green })
+                        ]
+                    )
+                });
+            }
+
+            return {
+                title: "Bills",
+                color: PDF.c.bills,
+                summary: `${plural(count, "bill")}  |  Sales ${moneyShort(sales)}  |  Profit ${moneyShort(profit)}`,
+                head: [
+                    hcell("Invoice #"), hcell("Date"), hcell("Bill Type"),
+                    hcell("Amount (Rs)", "right"), hcell("Profit (Rs)", "right")
+                ],
+                columnStyles: {
+                    1: { cellWidth: 26 },
+                    3: { cellWidth: 36, halign: "right" },
+                    4: { cellWidth: 36, halign: "right" }
+                },
+                groups,
+                total: groups.length ? totalRow(3, "Total", [fmt2(sales), fmt2(profit)]) : null
+            };
+        }
+
+
+        function buildEESegment(scopes) {
+            const groups = [];
+            let count = 0, earning = 0, expenses = 0;
+
+            for (const s of scopes) {
+                const f = computeFinances([], s.ee);
+                if (!f.eeInRange.length) continue;
+
+                const items = [...f.eeInRange].sort((a, b) => b.date.localeCompare(a.date));
+
+                count    += items.length;
+                earning  += f.earning;
+                expenses += f.expenses;
+
+                groups.push({
+                    label: s.label,
+                    rows: items.map(e => {
+                        const isEarn = e.type === "Earning";
+                        const col = isEarn ? PDF.c.green : PDF.c.red;
+                        return [
+                            pdfText(e.date || "-"),
+                            cell(e.type, { textColor: col, fontStyle: "bold" }),
+                            pdfText(e.title || "-"),
+                            cell((isEarn ? "+" : "-") + fmt2(e.amount), { textColor: col })
+                        ];
+                    }),
+                    subtotal: summaryRow(
+                        3,
+                        `Subtotal - Earning ${fmt2(f.earning)}  |  Expenses ${fmt2(f.expenses)}  |  Net`,
+                        [cell(fmt2(f.netEE), { textColor: f.netEE < 0 ? PDF.c.red : PDF.c.green })]
+                    )
+                });
+            }
+
+            const net = earning - expenses;
+
+            return {
+                title: "Expenses & Earnings",
+                color: PDF.c.ee,
+                summary: `Earning ${moneyShort(earning)}  |  Expenses ${moneyShort(expenses)}  |  Net ${moneyShort(net)}`,
+                head: [
+                    hcell("Date"), hcell("Type"), hcell("Title"), hcell("Amount (Rs)", "right")
+                ],
+                columnStyles: {
+                    0: { cellWidth: 26 },
+                    1: { cellWidth: 24 },
+                    3: { cellWidth: 36, halign: "right" }
+                },
+                groups,
+                total: groups.length
+                    ? totalRow(
+                        3,
+                        `Total - Earning ${fmt2(earning)}  |  Expenses ${fmt2(expenses)}  |  Net`,
+                        [fmt2(net)]
+                      )
+                    : null
+            };
+        }
+
+
+        function buildWorkflowSegment(scopes) {
+            const groups = [];
+            let entries = 0, amount = 0;
+
+            for (const s of scopes) {
+                const g = groupWorkflow(s.workflow);
+                if (!g.length) continue;
+
+                const t = workflowTotals(g);
+                entries += g.length;
+                amount  += t.totalAmount;
+
+                groups.push({
+                    label: s.label,
+                    rows: g.map(w => {
+                        const u = w.unit ? " " + w.unit : "";
+                        const pct = w.boqQuantity > 0
+                            ? (w.resolvedQuantity / w.boqQuantity) * 100
+                            : null;
+                        return [
+                            pdfText(w.title),
+                            pdfText(w.phase),
+                            pdfText(qtyShort(w.resolvedQuantity) + u),
+                            w.boqQuantity > 0 ? pdfText(qtyShort(w.boqQuantity) + u) : "-",
+                            pct === null ? "-" : pct.toFixed(1) + "%",
+                            fmt2(w.resolvedAmount)
+                        ];
+                    }),
+                    subtotal: summaryRow(
+                        5,
+                        `Subtotal - ${plural(g.length, "item")}`,
+                        [fmt2(t.totalAmount)]
+                    )
+                });
+            }
+
+            return {
+                title: "Workflow - Resolved Work by Phase",
+                color: PDF.c.workflow,
+                summary: `${plural(entries, "entry")}  |  Amount ${moneyShort(amount)}`,
+                head: [
+                    hcell("Item"), hcell("Phase"),
+                    hcell("Qty Resolved", "right"), hcell("BOQ Qty", "right"),
+                    hcell("Done", "right"), hcell("Amount (Rs)", "right")
+                ],
+                columnStyles: {
+                    1: { cellWidth: 28 },
+                    2: { cellWidth: 28, halign: "right" },
+                    3: { cellWidth: 26, halign: "right" },
+                    4: { cellWidth: 16, halign: "right" },
+                    5: { cellWidth: 32, halign: "right" }
+                },
+                groups,
+                total: groups.length ? totalRow(5, "Total", [fmt2(amount)]) : null
+            };
+        }
+
+
+        function buildStockSegment(scopes) {
+            const groups = [];
+            let products = 0, low = 0, value = 0;
+
+            for (const s of scopes) {
+                const g = groupStockByProduct(s.stock);
+                if (!g.length) continue;
+
+                const t = stockTotals(g);
+                products += t.itemCount;
+                low      += t.lowCount;
+                value    += t.totalValue;
+
+                groups.push({
+                    label: s.label,
+                    rows: g.map(i => {
+                        const isLow = i.quantity < LOW_STOCK_THRESHOLD;
+                        const fill  = isLow ? { fillColor: PDF.c.low } : {};
+
+                        return [
+                            cell(pdfText(i.name), isLow ? { ...fill, fontStyle: "bold" } : {}),
+                            cell(pdfText(i.unit || "-"), fill),
+                            cell(
+                                qtyShort(i.quantity) + (isLow ? "  LOW" : ""),
+                                isLow ? { ...fill, textColor: PDF.c.red, fontStyle: "bold" } : {}
+                            ),
+                            cell(i.purchasePrice ? fmt2(i.purchasePrice) : "-", fill),
+                            cell(i.sellingPrice  ? fmt2(i.sellingPrice)  : "-", fill),
+                            cell(fmt2(i.value), { ...fill, fontStyle: "bold" })
+                        ];
+                    }),
+                    subtotal: summaryRow(
+                        5,
+                        `Subtotal - ${plural(t.itemCount, "product")}  |  Qty ${qtyShort(t.totalQty)}`
+                            + (t.lowCount ? `  |  ${t.lowCount} low stock` : ""),
+                        [fmt2(t.totalValue)]
+                    )
+                });
+            }
+
+            return {
+                title: "Stock",
+                color: PDF.c.stock,
+                summary: `${plural(products, "product")}  |  Value ${moneyShort(value)}`
+                       + (low ? `  |  ${low} low stock` : ""),
+                head: [
+                    hcell("Product"), hcell("Unit"),
+                    hcell("Qty", "right"), hcell("Purchase", "right"),
+                    hcell("Selling", "right"), hcell("Stock Value (Rs)", "right")
+                ],
+                columnStyles: {
+                    1: { cellWidth: 18 },
+                    2: { cellWidth: 28, halign: "right" },
+                    3: { cellWidth: 26, halign: "right" },
+                    4: { cellWidth: 26, halign: "right" },
+                    5: { cellWidth: 34, halign: "right" }
+                },
+                groups,
+                total: groups.length ? totalRow(5, "Total", [fmt2(value)]) : null
+            };
+        }
+
+
+        // ---------- drawing ----------
+
+        function drawSegment(doc, y, seg) {
+            const m = PDF.margin;
+
+            y = pdfHeading(doc, y, seg.title, seg.color, seg.summary);
+
+            if (!seg.groups.length) {
+                doc.setFont("helvetica", "italic");
+                doc.setFontSize(9);
+                doc.setTextColor(...PDF.c.muted);
+                doc.text("No records for the current filters.", m.left + 1, y + 4);
+                return y + 12;
+            }
+
+            const body = [];
+
+            for (const g of seg.groups) {
+                // business / project label row
+                body.push([{
+                    content: pdfText(g.label),
+                    colSpan: seg.head.length,
+                    styles: {
+                        fillColor: PDF.c.group,
+                        textColor: PDF.c.ink,
+                        fontStyle: "bold",
+                        halign: "left"
+                    }
+                }]);
+                body.push(...g.rows);
+                if (g.subtotal) body.push(g.subtotal);
+            }
+
+            if (seg.total) body.push(seg.total);
+
+            doc.autoTable({
+                ...pdfTableBase(seg.color),
+                startY: y,
+                head: [seg.head],
+                body,
+                columnStyles: seg.columnStyles
+            });
+
+            return doc.lastAutoTable.finalY + 9;
+        }
+
+
+        function drawGrandTotals(doc, y) {
+            y = pdfHeading(doc, y, "Grand Totals", PDF.c.ink);
+
+            doc.autoTable({
+                ...pdfTableBase(PDF.c.ink),
+                startY: y,
+                head: [[hcell("Metric"), hcell("Value", "right"), hcell("Detail")]],
+                body: buildKpiCards().map(c => [
+                    pdfText(c.label),
+                    pdfText(c.value),
+                    pdfText(c.sub)
+                ]),
+                columnStyles: {
+                    0: { cellWidth: 55, fontStyle: "bold" },
+                    1: { cellWidth: 45, halign: "right", fontStyle: "bold" },
+                    2: { textColor: PDF.c.muted }
+                }
+            });
+
+            return doc.lastAutoTable.finalY + 9;
+        }
+
+
+        function drawBusinessSummary(doc, y) {
+            const visible = getVisibleBusinesses();
+            if (!visible.length) return y;
+
+            const { showBills, showEE, showWorkflow, showStock } = filterState;
+            const showFin = showBills || showEE;
+
+            const head = [hcell("Business"), hcell("Projects", "right")];
+            if (showBills)    head.push(hcell("Bills", "right"), hcell("Sales", "right"));
+            if (showEE)       head.push(hcell("Earning", "right"), hcell("Expenses", "right"));
+            if (showFin)      head.push(hcell("Net Profit", "right"));
+            if (showWorkflow) head.push(hcell("Workflow Amt", "right"));
+            if (showStock)    head.push(hcell("Stock Value", "right"));
+
+            const stockValue = (items) => stockTotals(groupStockByProduct(items)).totalValue;
+
+            const totals = {
+                projects: 0, bills: 0, sales: 0, earning: 0, expenses: 0,
+                net: 0, workflow: 0, stock: 0
+            };
+
+            const body = visible.map(biz => {
+                const projects = getVisibleProjects(biz);
+
+                const fin = showFin
+                    ? computeFinances(
+                        showBills ? [...biz.bills, ...projects.flatMap(p => p.bills)] : [],
+                        showEE    ? [...biz.ee,    ...projects.flatMap(p => p.ee)]    : []
+                      )
+                    : null;
+
+                const wf = showWorkflow
+                    ? workflowTotals(groupWorkflow(projects.flatMap(p => p.workflow))).totalAmount
+                    : 0;
+
+                const sv = showStock
+                    ? stockValue(biz.stock) + projects.reduce((s, p) => s + stockValue(p.stock), 0)
+                    : 0;
+
+                totals.projects += projects.length;
+                totals.workflow += wf;
+                totals.stock    += sv;
+
+                const label = `${biz.bizName} (${biz.bizId})` + (biz.isConstruction ? " - Construction" : "");
+                const row = [pdfText(label), biz.isConstruction ? String(projects.length) : "-"];
+
+                if (showBills) {
+                    row.push(String(fin.billCount), shortMoney(fin.sales));
+                    totals.bills += fin.billCount;
+                    totals.sales += fin.sales;
+                }
+                if (showEE) {
+                    row.push(shortMoney(fin.earning), shortMoney(fin.expenses));
+                    totals.earning  += fin.earning;
+                    totals.expenses += fin.expenses;
+                }
+                if (showFin) {
+                    row.push(cell(shortMoney(fin.netProfit), {
+                        textColor: fin.netProfit < 0 ? PDF.c.red : PDF.c.green,
+                        fontStyle: "bold"
+                    }));
+                    totals.net += fin.netProfit;
+                }
+                if (showWorkflow) row.push(shortMoney(wf));
+                if (showStock)    row.push(shortMoney(sv));
+
+                return row;
+            });
+
+            const totalCells = ["Total", String(totals.projects)];
+            if (showBills)    totalCells.push(String(totals.bills), shortMoney(totals.sales));
+            if (showEE)       totalCells.push(shortMoney(totals.earning), shortMoney(totals.expenses));
+            if (showFin)      totalCells.push(shortMoney(totals.net));
+            if (showWorkflow) totalCells.push(shortMoney(totals.workflow));
+            if (showStock)    totalCells.push(shortMoney(totals.stock));
+
+            body.push(totalRow(1, totalCells[0], totalCells.slice(1)));
+
+            y = pdfHeading(doc, y, "Business Summary", PDF.c.ink, "Amounts in Rs  (K = thousand, L = lakh, Cr = crore)");
+
+            const columnStyles = { 1: { halign: "right", cellWidth: 16 } };
+            for (let i = 2; i < head.length; i++) columnStyles[i] = { halign: "right" };
+
+            doc.autoTable({
+                ...pdfTableBase(PDF.c.ink),
+                styles: { ...pdfTableBase().styles, fontSize: 7.5, cellPadding: 1.5 },
+                startY: y,
+                head: [head],
+                body,
+                columnStyles
+            });
+
+            return doc.lastAutoTable.finalY + 9;
+        }
+
+
+        function buildPdf(doc) {
+            const m = PDF.margin;
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const stamp = pdfText(new Date().toLocaleString("en-IN"));
+            const range = `${fromDate || "-"} to ${toDate || "-"}`;
+
+            // ----- title block -----
+            let y = m.top;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(17);
+            doc.setTextColor(17, 24, 39);
+            doc.text("Business & Project Report", m.left, y + 2);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(...PDF.c.muted);
+            doc.text(`Date range: ${range}`, m.left, y + 8);
+            doc.text(`Segments: ${pdfText(activeSegmentsLabel())}`, m.left, y + 13);
+            doc.text(`Generated ${stamp}`, pageW - m.right, y + 8, { align: "right" });
+
+            doc.setDrawColor(13, 110, 253);
+            doc.setLineWidth(0.6);
+            doc.line(m.left, y + 17, pageW - m.right, y + 17);
+
+            y += 24;
+
+            // ----- body -----
+            const scopes = collectScopes();
+
+            if (!scopes.length) {
+                doc.setFont("helvetica", "italic");
+                doc.setFontSize(10);
+                doc.text("Nothing to display with the current filters.", m.left, y);
+            } else {
+                y = drawGrandTotals(doc, y);
+                y = drawBusinessSummary(doc, y);
+
+                if (filterState.showBills)    y = drawSegment(doc, y, buildBillsSegment(scopes));
+                if (filterState.showEE)       y = drawSegment(doc, y, buildEESegment(scopes));
+                if (filterState.showWorkflow) y = drawSegment(doc, y, buildWorkflowSegment(scopes));
+                if (filterState.showStock)    y = drawSegment(doc, y, buildStockSegment(scopes));
+            }
+
+            // ----- running header + footer on every page -----
+            const pages = doc.internal.getNumberOfPages();
+
+            for (let i = 1; i <= pages; i++) {
+                doc.setPage(i);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.setTextColor(120, 120, 120);
+
+                if (i > 1) {
+                    doc.text(`Business & Project Report  |  ${range}`, m.left, 9);
+                    doc.setDrawColor(...PDF.c.line);
+                    doc.setLineWidth(0.2);
+                    doc.line(m.left, 11, pageW - m.right, 11);
+                }
+
+                doc.setDrawColor(...PDF.c.line);
+                doc.setLineWidth(0.2);
+                doc.line(m.left, pageH - 11, pageW - m.right, pageH - 11);
+                doc.text("SR Group - Business & Project Report", m.left, pageH - 6.5);
+                doc.text(`Page ${i} of ${pages}`, pageW - m.right, pageH - 6.5, { align: "right" });
+            }
+        }
+
+
+        async function downloadPDF() {
+            const JsPDF = window.jspdf?.jsPDF;
+            if (!JsPDF) {
+                showStatus("PDF library not loaded. Check internet and refresh.", "warning");
+                return;
+            }
+
+            const btn = document.getElementById("downloadPdfBtn");
+            btn.disabled = true;
+            showStatus("Generating PDF…", "info");
+
+            // let the status message paint before the (brief) synchronous work
+            await new Promise(r => setTimeout(r, 30));
+
+            try {
+                const doc = new JsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+
+                if (typeof doc.autoTable !== "function") {
+                    throw new Error("autoTable plugin not loaded");
+                }
+
+                buildPdf(doc);
+                doc.save(`SR-Report_${fromDate || "all"}_to_${toDate || "all"}.pdf`);
+                showStatus("PDF downloaded.", "success");
+
+            } catch (err) {
+                console.error("PDF generation error:", err);
+                showStatus("PDF generation failed: " + (err.message || ""), "danger");
+            } finally {
+                btn.disabled = false;
+            }
         }
 
 
@@ -1281,16 +2740,23 @@
         // CONTROLS
         // =====================================================
 
-        dateRangeSelect.addEventListener("change", async () => {
-            dateRange = dateRangeSelect.value;
-            await buildReport();
+        fromDateInput.addEventListener("change", () => {
+            fromDate = fromDateInput.value;
+            renderReport();
+        });
+
+        toDateInput.addEventListener("change", () => {
+            toDate = toDateInput.value;
+            renderReport();
         });
 
         document.getElementById("refreshBtn").addEventListener("click", async () => {
-            showStatus("Refreshing...", "info");
+            showStatus("Refreshing…", "info");
             await bootstrap();
             showStatus("Report reloaded.", "success");
         });
+
+        document.getElementById("downloadPdfBtn").addEventListener("click", downloadPDF);
 
         document.getElementById("expandAllBtn").addEventListener("click", () => {
             document.querySelectorAll(".tree-business").forEach(el => el.classList.add("open"));
@@ -1303,5 +2769,4 @@
     </script>
 
 </body>
-
 </html>
