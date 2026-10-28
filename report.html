@@ -1248,9 +1248,12 @@
 
             const arr = Array.from(groups.values());
             arr.forEach(g => {
-                g.cost  = g.quantity * (g.purchasePrice || 0);
-                g.value = g.quantity * (g.sellingPrice  || 0);
-            });
+    // Stock Value = Purchase Price × Total Quantity
+    g.value = g.quantity * (g.purchasePrice || 0);
+
+    // Total Cost uses the same purchase-price calculation
+    g.cost = g.quantity * (g.purchasePrice || 0);
+});
 
             arr.sort((a, b) => a.name.localeCompare(b.name));
             return arr;
