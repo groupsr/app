@@ -2296,7 +2296,7 @@
         }
 
 
-        function renderField(segId, fieldId, field) {
+         function renderField(segId, fieldId, field) {
             const fieldName = field.name || "Field";
             const type = field.type || "text";
 
@@ -2309,7 +2309,9 @@
             const autoSetDate = field.autoSetDate === true;
             const autoSuggest = field.autoSuggest === true;
 
-            const readonlyAttr = (autoGenerate || autoSetDate) ? "readonly" : "";
+            // CHANGED: only auto-generated number fields stay locked.
+            // autoSetDate fields are pre-filled but remain editable.
+            const readonlyAttr = autoGenerate ? "readonly" : "";
 
             const autoAttrs = `
                 data-autogenerate="${autoGenerate ? "true" : "false"}"

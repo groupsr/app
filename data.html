@@ -222,7 +222,7 @@
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <a href="manage.html" class="btn btn-outline-secondary">
+                <a href="manage.html" id="backBtn" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Back
                 </a>
                 <button class="btn btn-outline-success" id="downloadBtn" disabled>
@@ -451,6 +451,18 @@
             showFatal("Missing business or setting in the URL.");
             return;
         }
+
+
+        // Make the Back button carry the same context we arrived with,
+// so manage.html can restore the selected business / project / setting.
+const backBtn = document.getElementById("backBtn");
+if (backBtn) {
+    const bp = new URLSearchParams();
+    bp.set("business", businessId);
+    if (settingKey) bp.set("setting", settingKey);
+    if (projectId)  bp.set("project", projectId);
+    backBtn.href = `manage.html?${bp.toString()}`;
+}
 
         if (!userHasBusinessAccess(businessId)) {
             showFatal("You do not have access to this business.");

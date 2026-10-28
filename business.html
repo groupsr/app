@@ -928,6 +928,12 @@
                     </td>
                     <td class="text-end">
                         <button type="button"
+                            class="btn btn-sm btn-outline-primary edit-project me-1"
+                            data-id="${escapeHtml(pushId)}"
+                            title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button"
                             class="btn btn-sm btn-outline-danger delete-project"
                             data-id="${escapeHtml(pushId)}"
                             title="Delete">
@@ -939,9 +945,40 @@
                 projectsTableBody.appendChild(row);
             });
 
+            projectsTableBody.querySelectorAll(".edit-project").forEach(btn => {
+                btn.addEventListener("click", () => editProject(btn.dataset.id));
+            });
+
             projectsTableBody.querySelectorAll(".delete-project").forEach(btn => {
                 btn.addEventListener("click", () => deleteProject(btn.dataset.id));
             });
+        }
+
+
+
+
+                function editProject(projectPushId) {
+
+            const project = activeProjects[projectPushId] || {};
+
+            projectFormWrapper.classList.remove("d-none");
+
+            toggleProjectFormBtn.innerHTML = `
+                <i class="bi bi-x-lg me-1"></i>
+                Close
+            `;
+
+            projectIdInput.value = project.projectId || "";
+            projectNameInput.value = project.projectName || "";
+
+            projectForm.dataset.editing = projectPushId;
+
+            saveProjectBtn.innerHTML = `
+                <i class="bi bi-check-lg me-1"></i>
+                Update Project
+            `;
+
+            projectNameInput.focus();
         }
 
 
@@ -975,12 +1012,19 @@
         cancelProjectBtn.addEventListener("click", closeProjectForm);
 
 
-        function closeProjectForm() {
+               function closeProjectForm() {
             projectFormWrapper.classList.add("d-none");
             projectForm.reset();
+            projectForm.removeAttribute("data-editing");
+
             toggleProjectFormBtn.innerHTML = `
                 <i class="bi bi-plus-lg me-1"></i>
                 Add Project
+            `;
+
+            saveProjectBtn.innerHTML = `
+                <i class="bi bi-check-lg me-1"></i>
+                Save Project
             `;
         }
 
@@ -1031,25 +1075,45 @@
                 return;
             }
 
+            const editingPushId = projectForm.dataset.editing || "";
+
             saveProjectBtn.disabled = true;
             saveProjectBtn.innerHTML = `
                 <span class="spinner-border spinner-border-sm me-1"></span>
-                Saving...
+                ${editingPushId ? "Updating..." : "Saving..."}
             `;
 
             try {
 
-                const newProjectRef = push(
-                    ref(db, `sr_group/businesses/${activeBusinessId}/projects`)
-                );
+                if (editingPushId) {
 
-                await set(newProjectRef, {
-                    projectId: projectId,
-                    projectName: projectName,
-                    createdAt: Date.now()
-                });
+                    // EDIT MODE — only the project name is updatable.
+                    // projectId is preserved because other records reference it.
+                    await set(
+                        ref(db,
+                            `sr_group/businesses/${activeBusinessId}/projects/${editingPushId}/projectName`
+                        ),
+                        projectName
+                    );
 
-                showProjectsStatus("Project added successfully.", "success");
+                    showProjectsStatus("Project updated successfully.", "success");
+
+                }
+                else {
+
+                    // ADD MODE
+                    const newProjectRef = push(
+                        ref(db, `sr_group/businesses/${activeBusinessId}/projects`)
+                    );
+
+                    await set(newProjectRef, {
+                        projectId: projectId,
+                        projectName: projectName,
+                        createdAt: Date.now()
+                    });
+
+                    showProjectsStatus("Project added successfully.", "success");
+                }
 
                 closeProjectForm();
 
@@ -1062,10 +1126,18 @@
                 );
             } finally {
                 saveProjectBtn.disabled = false;
-                saveProjectBtn.innerHTML = `
-                    <i class="bi bi-check-lg me-1"></i>
-                    Save Project
-                `;
+
+                if (projectForm.dataset.editing) {
+                    saveProjectBtn.innerHTML = `
+                        <i class="bi bi-check-lg me-1"></i>
+                        Update Project
+                    `;
+                } else {
+                    saveProjectBtn.innerHTML = `
+                        <i class="bi bi-check-lg me-1"></i>
+                        Save Project
+                    `;
+                }
             }
         });
 
@@ -1087,6 +1159,12 @@
                 );
 
                 showProjectsStatus("Project deleted.", "success");
+
+                // If the deleted project was open in the form, close it
+                // so the user doesn't submit stale data.
+                if (projectForm.dataset.editing === projectPushId) {
+                    closeProjectForm();
+                }
 
                 await loadProjects();
 

@@ -663,6 +663,8 @@
 
         select.disabled = false;
 
+        restoreFromUrl();
+
     }
 
 
@@ -1165,7 +1167,8 @@
                 col.innerHTML = `
 
                     <div
-                        class="card setting-card h-100 shadow-sm">
+                       class="card setting-card h-100 shadow-sm"
+                       data-setting-key="${escapeHtml(key)}">
 
                         <div
                             class="card-body d-flex align-items-center gap-3">
@@ -1435,6 +1438,109 @@
             .replace(/'/g,  "&#039;");
 
     }
+
+
+
+
+    // =====================================================
+// URL RESTORE (business / project / setting)
+// =====================================================
+
+let urlRestored = false;
+
+function waitFor(conditionFn, timeoutMs = 5000, intervalMs = 50) {
+    return new Promise(resolve => {
+        const start = Date.now();
+        const tick = () => {
+            let ok = false;
+            try { ok = !!conditionFn(); } catch { ok = false; }
+            if (ok) return resolve(true);
+            if (Date.now() - start > timeoutMs) return resolve(false);
+            setTimeout(tick, intervalMs);
+        };
+        tick();
+    });
+}
+
+async function restoreFromUrl() {
+
+    if (urlRestored) return;
+    urlRestored = true;
+
+    const params     = new URLSearchParams(location.search);
+    const urlBusiness = params.get("business") || "";
+    const urlProject  = params.get("project")  || "";
+    const urlSetting  = params.get("setting")  || "";
+
+    if (!urlBusiness) return;
+
+    const businessSelect = document.getElementById("businessSelect");
+    if (!businessSelect || businessSelect.disabled) return;
+
+    const hasBusiness = Array.from(businessSelect.options)
+        .some(o => o.value === urlBusiness);
+    if (!hasBusiness) return;
+
+    // ---- 1. select business and let the existing handler run ----
+    businessSelect.value = urlBusiness;
+    businessSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    const isConstruction = await waitFor(
+        () => typeof selectedBusiness?.construction === "boolean",
+        3000
+    ).then(() => isConstructionBusiness(selectedBusiness));
+
+    // ---- 2. select project (construction only) ----
+    if (isConstruction && urlProject) {
+
+        const projectSelect = document.getElementById("projectSelect");
+
+        const projectReady = await waitFor(() => {
+            if (!projectSelect) return false;
+            return Array.from(projectSelect.options)
+                .some(o => o.value === urlProject);
+        }, 5000);
+
+        if (projectReady && projectSelect) {
+            projectSelect.value = urlProject;
+            projectSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+    }
+
+    // ---- 3. wait for settings grid, then scroll to / flash the setting ----
+    if (urlSetting) {
+
+        const gridReady = await waitFor(() => {
+            const grid = document.getElementById("settingsGrid");
+            return grid &&
+                   !grid.classList.contains("d-none") &&
+                   grid.children.length > 0;
+        }, 5000);
+
+        if (gridReady) {
+            highlightSettingCard(urlSetting);
+        }
+    }
+}
+
+function highlightSettingCard(settingKey) {
+
+    const card = document.querySelector(
+        `.setting-card[data-setting-key="${CSS.escape(settingKey)}"]`
+    );
+
+    if (!card) return;
+
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    const prevShadow = card.style.boxShadow;
+    card.style.transition = "box-shadow 0.3s ease";
+    card.style.boxShadow  = "0 0 0 4px rgba(13, 110, 253, 0.35)";
+
+    setTimeout(() => {
+        card.style.boxShadow = prevShadow;
+    }, 2500);
+}
 
 </script>
 
