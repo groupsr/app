@@ -285,14 +285,13 @@
                             <th>Employee</th>
                             <th style="width:110px;">ID</th>
                             <th style="width:110px;">Type</th>
-                            <th style="width:130px;">Amount</th>
                             <th style="width:280px;">Status</th>
                         </tr>
                     </thead>
 
                     <tbody id="employeeTableBody">
                         <tr>
-                            <td colspan="6"
+                            <td colspan="5"
                                 class="text-center text-muted py-5">
 
                                 Select a business to load employees.
@@ -683,7 +682,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-muted py-5">
                         Select a business to load employees.
                     </td>
@@ -852,7 +851,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-muted py-5">
 
                         <i class="bi bi-inbox fs-2 d-block mb-2"></i>
@@ -882,7 +881,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-muted py-5">
 
                         <i class="bi bi-funnel fs-2 d-block mb-2"></i>
@@ -903,7 +902,6 @@
         const nameField  = fields.find(f => f.title === "Employee Name");
         const desigField = fields.find(f => f.title === "Designation");
         const typeField  = fields.find(f => f.title === "Type");
-        const amountField= fields.find(f => f.title === "Amount");
 
 
         visible.forEach((emp, index) => {
@@ -922,9 +920,6 @@
 
             const typeText =
                 typeField ? (emp.data[typeField.id] || "") : "";
-
-            const amountText =
-                amountField ? (emp.data[amountField.id] || "") : "";
 
 
             const saved = attendanceState[emp.rowId] || {};
@@ -947,7 +942,6 @@
                 </td>
                 <td>${escapeHtml(idText)}</td>
                 <td>${escapeHtml(typeText)}</td>
-                <td>${escapeHtml(amountText)}</td>
                 <td>
                     <div class="status-cell">
                         <select
@@ -1332,7 +1326,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-muted py-5">
                         Select a business to load employees.
                     </td>
@@ -1400,7 +1394,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-muted py-5">
                         Select a project to load employees.
                     </td>
@@ -1437,7 +1431,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-muted py-5">
                         Select a project to load employees.
                     </td>
@@ -1463,7 +1457,7 @@
 
         employeeTableBody.innerHTML = `
             <tr>
-                <td colspan="6"
+                <td colspan="5"
                     class="text-center text-muted py-5">
                     Loading employees...
                 </td>
@@ -1488,7 +1482,7 @@
 
             employeeTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6"
+                    <td colspan="5"
                         class="text-center text-danger py-5">
                         ${escapeHtml(error.message || "Failed to load.")}
                     </td>
