@@ -644,7 +644,7 @@
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
         import {
-            ref, get, remove
+            ref, get, remove, set
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
 
@@ -677,6 +677,14 @@
 
         let currentPage = 1;
         let pageSize = 20;
+
+
+        // =====================================================
+        // PRODUCT QUANTITY FIELD CACHE  (for stock restore on delete)
+        // =====================================================
+
+        // businessId -> fieldId ("" if not found)
+        const productQtyFieldCache = {};
 
 
         // =====================================================
@@ -806,6 +814,115 @@
         //                     "SR001::__none__"       (no project)
         function projectKey(businessId, projectPushId) {
             return `${businessId}::${projectPushId || "__none__"}`;
+        }
+
+
+        // =====================================================
+        // STOCK RESTORE ON DELETE  (NEW)
+        // =====================================================
+
+        // Determine the records base path for a bill based on
+        // whether the bill was saved under a project or directly
+        // under the business. This mirrors the logic used in
+        // generate-bill.html when quantities were deducted.
+        function recordsPathForBill(bill) {
+            if (bill.projectPushId) {
+                return `sr_group/businesses/${bill.businessId}/projects/${bill.projectPushId}/records`;
+            }
+            return `sr_group/businesses/${bill.businessId}/records`;
+        }
+
+
+        // Load (and cache) the "Total Quantity" field id for a
+        // business's product settings. Returns "" if not configured.
+        async function getProductQtyFieldId(businessId) {
+            if (!businessId) return "";
+
+            if (Object.prototype.hasOwnProperty.call(productQtyFieldCache, businessId)) {
+                return productQtyFieldCache[businessId];
+            }
+
+            let fieldId = "";
+
+            try {
+                const snap = await get(
+                    ref(db, `sr_group/settings/${businessId}/products`)
+                );
+
+                if (snap.exists()) {
+                    const defs = snap.val() || {};
+
+                    for (const [fid, def] of Object.entries(defs)) {
+                        if (fid === "meta") continue;
+                        if (!def || typeof def !== "object") continue;
+
+                        // Matches PRODUCT_TITLE_QTY in generate-bill.html
+                        if (String(def.title || "").trim() === "Total Quantity") {
+                            fieldId = fid;
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (err) {
+                console.warn("Could not load product field map for", businessId, err);
+            }
+
+            productQtyFieldCache[businessId] = fieldId;
+            return fieldId;
+        }
+
+
+        // Add back to stock every product line that was deducted
+        // when the bill was created. Best-effort: failures are
+        // logged and never block the bill deletion.
+        async function restoreProductQuantities(bill) {
+            const result = { restored: 0, failed: 0, skipped: 0 };
+
+            const items = Array.isArray(bill.items) ? bill.items : [];
+
+            const productLines = items.filter(
+                it => it && it.itemType === "product" && it.itemId
+            );
+
+            if (!productLines.length) return result;
+
+            const qtyFieldId = await getProductQtyFieldId(bill.businessId);
+
+            if (!qtyFieldId) {
+                console.warn(
+                    "Quantity field not configured for business " +
+                    bill.businessId + "; skipping stock restore."
+                );
+                result.skipped = productLines.length;
+                return result;
+            }
+
+            const base = recordsPathForBill(bill);
+
+            await Promise.allSettled(
+                productLines.map(async line => {
+                    try {
+                        const path = `${base}/products/${line.itemId}/${qtyFieldId}`;
+
+                        const snap = await get(ref(db, path));
+                        const current = Number(snap.val()) || 0;
+                        const next = current + (Number(line.quantity) || 0);
+
+                        await set(ref(db, path), next);
+                        result.restored++;
+                    }
+                    catch (err) {
+                        console.error(
+                            `Failed to restore quantity for ${line.name || line.itemId}:`,
+                            err
+                        );
+                        result.failed++;
+                    }
+                })
+            );
+
+            return result;
         }
 
 
@@ -1131,6 +1248,11 @@
                 clientName:
                     b?.dynamicFields?.["Bill to Information"]?.["Client Name"] || "",
                 itemCount: Array.isArray(b.items) ? b.items.length : 0,
+
+                // Preserve the raw line items so we can restore
+                // product stock when this bill is deleted.
+                items: Array.isArray(b.items) ? b.items : [],
+
                 gstId: b.gstId || ""
             };
         }
@@ -2143,14 +2265,26 @@
                         ? `Invoice #${bill.invoicenumber}`
                         : `Bill ${bill.id}`;
 
-                    if (!confirm(`Delete ${label}? This cannot be undone.`)) return;
+                    const productCount = (bill.items || []).filter(
+                        it => it && it.itemType === "product" && it.itemId
+                    ).length;
+
+                    const confirmMsg = productCount > 0
+                        ? `Delete ${label}? This cannot be undone.\n\nStock for ${productCount} product(s) will be added back.`
+                        : `Delete ${label}? This cannot be undone.`;
+
+                    if (!confirm(confirmMsg)) return;
 
                     try {
+                        // Delete the bill first.
                         const path = bill.projectPushId
                             ? `sr_group/businesses/${bill.businessId}/projects/${bill.projectPushId}/bills/${bill.id}`
                             : `sr_group/businesses/${bill.businessId}/bills/${bill.id}`;
 
                         await remove(ref(db, path));
+
+                        // Now restore product stock (best-effort).
+                        const restoreResult = await restoreProductQuantities(bill);
 
                         // Remove from local state
                         allBills = allBills.filter(b => !(
@@ -2159,7 +2293,21 @@
                             b.projectPushId === bill.projectPushId
                         ));
 
-                        showStatus(`Deleted ${label}.`, "success");
+                        let msg = `Deleted ${label}.`;
+                        if (restoreResult.restored > 0) {
+                            msg += ` Restored stock for ${restoreResult.restored} product(s).`;
+                        }
+                        if (restoreResult.skipped > 0) {
+                            msg += ` (${restoreResult.skipped} product(s) skipped — quantity field not configured.)`;
+                        }
+                        if (restoreResult.failed > 0) {
+                            msg += ` Warning: failed to restore ${restoreResult.failed} product(s).`;
+                        }
+
+                        showStatus(
+                            msg,
+                            restoreResult.failed > 0 ? "warning" : "success"
+                        );
 
                         // Rebuild project list (in case that was the last bill for a project)
                         await loadAvailableProjects();
@@ -2260,6 +2408,10 @@
 
         document.getElementById("refreshBtn").addEventListener("click", async () => {
             showStatus("Refreshing...", "info");
+
+            // Clear cached field maps so newly added quantity fields
+            // are picked up on refresh.
+            Object.keys(productQtyFieldCache).forEach(k => delete productQtyFieldCache[k]);
 
             await loadBillTypePaymentMap();
             await loadAvailableBusinesses();

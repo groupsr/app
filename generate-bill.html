@@ -407,7 +407,7 @@
 
                             <label class="form-label fw-semibold">
                                 GST Setting
-                                <span class="text-danger">*</span>
+                                <span class="text-danger" id="gstRequiredStar">*</span>
                             </label>
 
                             <select id="gstSelect" class="form-select" disabled required>
@@ -828,6 +828,9 @@
 
         const BOQ_SETTING_KEY = "bill-of-quantity";
 
+        // Bill type value that should NOT require a GST Setting
+        const CASH_BILL_TYPE_ID = "-P504j9LLV8xExUeLcpE";
+
 
         // =====================================================
         // ELEMENTS
@@ -837,6 +840,7 @@
         const projectCol = document.getElementById("projectCol");
         const projectSelect = document.getElementById("projectSelect");
         const gstSelect = document.getElementById("gstSelect");
+        const gstRequiredStar = document.getElementById("gstRequiredStar");
         const billTypeSelect = document.getElementById("billType");
         const dynamicBillSections = document.getElementById("dynamicBillSections");
         const supplyType = document.getElementById("supplyType");
@@ -958,6 +962,27 @@
             }
 
             return false;
+        }
+
+
+        // =====================================================
+        // CASH BILL / GST REQUIREMENT HELPERS  (NEW)
+        // =====================================================
+
+        function isCashBillType() {
+            return billTypeSelect.value === CASH_BILL_TYPE_ID;
+        }
+
+        function updateGstRequirementUI() {
+            const cash = isCashBillType();
+
+            // GST Setting is optional for Cash Bills
+            gstSelect.required = !cash;
+
+            // Hide the red asterisk next to the "GST Setting" label
+            if (gstRequiredStar) {
+                gstRequiredStar.classList.toggle("d-none", cash);
+            }
         }
 
 
@@ -1143,6 +1168,9 @@
             addItemRow();
             updateTaxVisibility();
             recalcTotals();
+
+            // Ensure GST required state matches current bill type (empty at start)
+            updateGstRequirementUI();
         });
 
 
@@ -2213,6 +2241,9 @@
         billTypeSelect.addEventListener("change", async () => {
             const id = billTypeSelect.value;
 
+            // Toggle GST requirement based on selected bill type
+            updateGstRequirementUI();
+
             if (!id) {
                 currentBillTypeData = null;
                 renderDynamicSections(null);
@@ -3241,7 +3272,13 @@
                 return null;
             }
 
-            if (!gstSelect.value) { showStatus("Please select a GST setting."); return null; }
+            // GST Setting is only required when the selected Bill Type is NOT
+            // the Cash Bill (or when no bill type is selected yet).
+            if (!isCashBillType() && !gstSelect.value) {
+                showStatus("Please select a GST setting.");
+                return null;
+            }
+
             if (!billTypeSelect.value || !currentBillTypeData) {
                 showStatus("Please select a Bill Type.");
                 return null;
@@ -3386,6 +3423,9 @@
 
             updateTaxVisibility();
             recalcTotals();
+
+            // Bill type is cleared → GST setting is required again
+            updateGstRequirementUI();
         });
 
     </script>

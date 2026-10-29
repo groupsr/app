@@ -175,6 +175,37 @@
             font-weight: 600;
             white-space: nowrap;
         }
+
+        /* ============================================================
+           UNIT-WISE SUMMARY (NEW)
+           ============================================================ */
+        .unit-summary-total-row > td {
+            background: #f8f9fa !important;
+            font-weight: 700;
+            border-top: 2px solid #dee2e6 !important;
+        }
+
+        .unit-summary-total-row .unit-summary-label {
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #212529;
+            font-size: 0.82rem;
+        }
+
+        .unit-summary-unit-badge {
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(13, 110, 253, 0.10);
+            color: #0d6efd;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .unit-summary-dash {
+            color: #adb5bd;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -250,6 +281,50 @@
 
         <!-- TABS -->
         <div id="tabsWrapper" class="d-none">
+
+            <!-- ===================================================== -->
+            <!-- UNIT-WISE SUMMARY  (NEW)                              -->
+            <!-- ===================================================== -->
+            <div class="card border-0 shadow-sm mb-4" id="unitSummaryCard">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <strong>
+                            <i class="bi bi-rulers me-2"></i>
+                            Unit-wise Summary
+                        </strong>
+                        <div class="small text-muted">
+                            <span id="unitSummaryGroupCount">0</span> unit group(s) —
+                            aggregated Quantity, Unit/Price, Unit/Costing, Resolved Qty &amp; Remaining per unit.
+                        </div>
+                    </div>
+
+                    <div class="small text-muted" id="unitSummaryNote"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 boq-table" id="unitSummaryTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:48px;">#</th>
+                                <th style="width:140px;">Unit</th>
+                                <th class="text-end" style="width:130px;">Quantity</th>
+                                <th class="text-end" style="width:140px;">Unit / Price</th>
+                                <th class="text-end" style="width:140px;">Unit / Costing</th>
+                                <th class="text-end" style="width:130px;">Resolved Qty</th>
+                                <th class="text-end" style="width:130px;">Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitSummaryBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="unitSummaryEmpty" class="empty-state d-none">
+                    <i class="bi bi-rulers"></i>
+                    <div>No Bill of Quantity items to summarise.</div>
+                </div>
+
+            </div>
 
             <ul class="nav nav-tabs mb-4" id="workflowTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -620,6 +695,13 @@
     const resolveQtyHint        = document.getElementById("resolveQtyHint");
     const confirmResolveBtn     = document.getElementById("confirmResolveBtn");
 
+    // --- Unit-wise summary elements (NEW) ---
+    const unitSummaryCard       = document.getElementById("unitSummaryCard");
+    const unitSummaryBody       = document.getElementById("unitSummaryBody");
+    const unitSummaryEmpty      = document.getElementById("unitSummaryEmpty");
+    const unitSummaryGroupCount = document.getElementById("unitSummaryGroupCount");
+    const unitSummaryNote       = document.getElementById("unitSummaryNote");
+
 
     // =====================================================
     // HELPERS
@@ -977,6 +1059,9 @@
 
         renderPending();
         renderResolved();
+
+        // Render the unit-wise summary after all data is loaded (NEW)
+        renderUnitSummary();
     }
 
 
@@ -1090,6 +1175,189 @@
         if (p === undefined || p === null || p === "") return false;
         if (c === undefined || c === null || c === "") return false;
         return Number.isFinite(Number(p)) && Number.isFinite(Number(c));
+    }
+
+
+    // =====================================================
+    // UNIT-WISE SUMMARY (NEW)
+    // =====================================================
+
+    /**
+     * Aggregate BOQ records by their "Unit" value.
+     *
+     * For each unit group:
+     *   - quantity      : sum of BOQ quantities
+     *   - resolvedQty   : sum of all resolved quantities for those items
+     *   - remaining     : quantity - resolvedQty (>= 0)
+     *   - avgPrice      : weighted average unit price (weighted by BOQ qty)
+     *                     only over items that have a saved rate; null if none
+     *   - avgCosting    : same, for unit costing
+     *
+     * A final "total" object is also returned with the same shape.
+     */
+    function getUnitWiseSummary() {
+
+        const map = new Map();
+
+        Object.entries(boqRecords).forEach(([pushId, rec]) => {
+
+            if (!rec || typeof rec !== "object") return;
+
+            const quantity = Number(getBoqValue(rec, "Quantity")) || 0;
+            const unitRaw  = String(getBoqValue(rec, "Unit") || "").trim();
+            const unit     = unitRaw || "—";
+
+            if (!map.has(unit)) {
+                map.set(unit, {
+                    unit,
+                    quantity: 0,
+                    resolvedQty: 0,
+                    weightedPriceSum: 0,
+                    weightedCostingSum: 0,
+                    weightedQty: 0,
+                    itemCount: 0
+                });
+            }
+
+            const g = map.get(unit);
+
+            g.quantity  += quantity;
+            g.itemCount += 1;
+            g.resolvedQty += getResolvedTotalForPushId(pushId);
+
+            const rate = unitRates[pushId];
+            if (hasSavedRate(rate)) {
+                const price   = Number(rate.unitPrice) || 0;
+                const costing = Number(rate.unitCosting) || 0;
+
+                // Weight by quantity — if quantity is 0, still count the item
+                // with a weight of 1 so a representative price is shown.
+                const weight = quantity > 0 ? quantity : 1;
+
+                g.weightedPriceSum   += price   * weight;
+                g.weightedCostingSum += costing * weight;
+                g.weightedQty        += weight;
+            }
+        });
+
+        const groups = [];
+        let totalQty = 0;
+        let totalResolved = 0;
+        let totalWeightedPrice = 0;
+        let totalWeightedCosting = 0;
+        let totalWeightedQty = 0;
+
+        map.forEach(g => {
+            g.remaining  = Math.max(0, g.quantity - g.resolvedQty);
+            g.avgPrice   = g.weightedQty > 0 ? g.weightedPriceSum / g.weightedQty : null;
+            g.avgCosting = g.weightedQty > 0 ? g.weightedCostingSum / g.weightedQty : null;
+
+            totalQty              += g.quantity;
+            totalResolved         += g.resolvedQty;
+            totalWeightedPrice    += g.weightedPriceSum;
+            totalWeightedCosting  += g.weightedCostingSum;
+            totalWeightedQty      += g.weightedQty;
+
+            groups.push(g);
+        });
+
+        groups.sort((a, b) => a.unit.localeCompare(b.unit));
+
+        const total = {
+            unit: "TOTAL",
+            quantity: totalQty,
+            resolvedQty: totalResolved,
+            remaining: Math.max(0, totalQty - totalResolved),
+            avgPrice:   totalWeightedQty > 0 ? totalWeightedPrice   / totalWeightedQty : null,
+            avgCosting: totalWeightedQty > 0 ? totalWeightedCosting / totalWeightedQty : null,
+            itemCount: groups.reduce((s, g) => s + g.itemCount, 0)
+        };
+
+        return { groups, total };
+    }
+
+
+    function renderUnitSummary() {
+
+        if (!unitSummaryBody) return;
+
+        unitSummaryBody.innerHTML = "";
+
+        const { groups, total } = getUnitWiseSummary();
+
+        unitSummaryGroupCount.textContent = groups.length;
+
+        // Small hint about how prices are aggregated
+        if (groups.length > 0) {
+            unitSummaryNote.textContent =
+                "Unit/Price & Unit/Costing are quantity-weighted averages per unit.";
+        }
+        else {
+            unitSummaryNote.textContent = "";
+        }
+
+        if (!groups.length) {
+            unitSummaryCard.querySelector("#unitSummaryTable").classList.add("d-none");
+            unitSummaryEmpty.classList.remove("d-none");
+            return;
+        }
+
+        unitSummaryCard.querySelector("#unitSummaryTable").classList.remove("d-none");
+        unitSummaryEmpty.classList.add("d-none");
+
+        groups.forEach((g, index) => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td class="text-muted">${index + 1}</td>
+                <td>
+                    <span class="unit-summary-unit-badge">
+                        ${escapeHtml(g.unit)}
+                    </span>
+                    <span class="merged-count">${g.itemCount} item(s)</span>
+                </td>
+                <td class="text-end qty-strong">${formatNumber(g.quantity)}</td>
+                <td class="text-end">
+                    ${g.avgPrice === null
+                        ? `<span class="unit-summary-dash">—</span>`
+                        : formatNumber(g.avgPrice)}
+                </td>
+                <td class="text-end">
+                    ${g.avgCosting === null
+                        ? `<span class="unit-summary-dash">—</span>`
+                        : formatNumber(g.avgCosting)}
+                </td>
+                <td class="text-end qty-strong">${formatNumber(g.resolvedQty)}</td>
+                <td class="text-end qty-strong">${formatNumber(g.remaining)}</td>
+            `;
+
+            unitSummaryBody.appendChild(tr);
+        });
+
+        // TOTAL ROW
+        const totalTr = document.createElement("tr");
+        totalTr.className = "unit-summary-total-row";
+        totalTr.innerHTML = `
+            <td></td>
+            <td class="unit-summary-label">
+                <i class="bi bi-calculator me-1"></i> Total
+            </td>
+            <td class="text-end">${formatNumber(total.quantity)}</td>
+            <td class="text-end">
+                ${total.avgPrice === null
+                    ? `<span class="unit-summary-dash">—</span>`
+                    : formatNumber(total.avgPrice)}
+            </td>
+            <td class="text-end">
+                ${total.avgCosting === null
+                    ? `<span class="unit-summary-dash">—</span>`
+                    : formatNumber(total.avgCosting)}
+            </td>
+            <td class="text-end">${formatNumber(total.resolvedQty)}</td>
+            <td class="text-end">${formatNumber(total.remaining)}</td>
+        `;
+
+        unitSummaryBody.appendChild(totalTr);
     }
 
 
@@ -1311,6 +1579,9 @@
             costingInput.classList.remove("is-dirty");
 
             showStatus("Unit rates saved.", "success");
+
+            // Refresh summary so the aggregated prices stay in sync (NEW)
+            renderUnitSummary();
         }
         catch (err) {
             console.error("Save unit rate error:", err);
@@ -1673,6 +1944,9 @@
 
                 priceInput.classList.remove("is-dirty");
                 costingInput.classList.remove("is-dirty");
+
+                // Keep the unit summary in sync (NEW)
+                renderUnitSummary();
             }
             catch (err) {
                 console.warn("Auto-save rate failed:", err);

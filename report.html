@@ -1223,40 +1223,48 @@
         }
 
         function groupStockByProduct(items) {
-            const groups = new Map();
+            const keyOf = (it) => String(it.name || "").trim().toLowerCase() || "_unknown_";
+
+            // First pass: remember a non-zero price seen for each product name,
+            // so records that leave the price blank still show a sensible value.
+            const priceByKey = new Map();
 
             for (const item of items) {
-                const key = String(item.name || "").trim().toLowerCase() || "_unknown_";
+                const k = keyOf(item);
+                const prev = priceByKey.get(k) || { purchase: 0, selling: 0 };
 
-                if (!groups.has(key)) {
-                    groups.set(key, {
-                        name: String(item.name || "—"),
-                        unit: item.unit || "",
-                        quantity: 0,
-                        purchasePrice: item.purchasePrice || 0,
-                        sellingPrice:  item.sellingPrice  || 0
-                    });
-                }
-
-                const g = groups.get(key);
-                g.quantity += item.quantity || 0;
-
-                if (!g.unit && item.unit) g.unit = item.unit;
-                if (!g.purchasePrice && item.purchasePrice) g.purchasePrice = item.purchasePrice;
-                if (!g.sellingPrice && item.sellingPrice)   g.sellingPrice  = item.sellingPrice;
+                priceByKey.set(k, {
+                    purchase: prev.purchase || Number(item.purchasePrice) || 0,
+                    selling:  prev.selling  || Number(item.sellingPrice)  || 0
+                });
             }
 
-            const arr = Array.from(groups.values());
-            arr.forEach(g => {
-    // Stock Value = Purchase Price × Total Quantity
-    g.value = g.quantity * (g.purchasePrice || 0);
+            // Second pass: one row per stock record (no merging of records).
+            const rows = items.map((item) => {
+                const k = keyOf(item);
+                const fallback = priceByKey.get(k) || { purchase: 0, selling: 0 };
 
-    // Total Cost uses the same purchase-price calculation
-    g.cost = g.quantity * (g.purchasePrice || 0);
-});
+                const quantity      = Number(item.quantity) || 0;
+                const purchasePrice = Number(item.purchasePrice) || fallback.purchase;
+                const sellingPrice  = Number(item.sellingPrice)  || fallback.selling;
 
-            arr.sort((a, b) => a.name.localeCompare(b.name));
-            return arr;
+                return {
+                    name: String(item.name || "—"),
+                    unit: item.unit || "",
+                    quantity,
+                    purchasePrice,
+                    sellingPrice,
+                    // Stock Value = Purchase Price × Total Quantity (per record)
+                    value: quantity * purchasePrice,
+                    cost:  quantity * purchasePrice
+                };
+            });
+
+            rows.sort((a, b) =>
+                a.name.localeCompare(b.name) || b.quantity - a.quantity
+            );
+
+            return rows;
         }
 
         function stockTotals(groupedItems) {
@@ -1999,7 +2007,7 @@
             header.innerHTML = `
                 <div><i class="bi bi-box-seam me-1"></i>${escapeHtml(label)}</div>
                 <div class="seg-summary">
-                    ${totals.itemCount} product${totals.itemCount === 1 ? "" : "s"} &nbsp;·&nbsp;
+                    ${totals.itemCount} stock entr${totals.itemCount === 1 ? "y" : "ies"} &nbsp;·&nbsp;
                     Qty ${qtyShort(totals.totalQty)} &nbsp;·&nbsp;
                     Value ${moneyShort(totals.totalValue)}
                     ${totals.lowCount > 0
@@ -2013,7 +2021,7 @@
             body.className = "segment-body";
 
             if (!groupedStock.length) {
-                body.innerHTML = `<div class="segment-empty">No products in stock for this scope.</div>`;
+                body.innerHTML = `<div class="segment-empty">No stock entries for this scope.</div>`;
             } else {
                 const rows = groupedStock.map(g => {
                     const isLow = g.quantity < LOW_STOCK_THRESHOLD;
@@ -2439,7 +2447,8 @@
                     }),
                     subtotal: summaryRow(
                         5,
-                        `Subtotal - ${plural(t.itemCount, "product")}  |  Qty ${qtyShort(t.totalQty)}`
+                        `Subtotal - ${t.itemCount} stock entr${t.itemCount === 1 ? "y" : "ies"}`
+                            + `  |  Qty ${qtyShort(t.totalQty)}`
                             + (t.lowCount ? `  |  ${t.lowCount} low stock` : ""),
                         [fmt2(t.totalValue)]
                     )
@@ -2449,7 +2458,7 @@
             return {
                 title: "Stock",
                 color: PDF.c.stock,
-                summary: `${plural(products, "product")}  |  Value ${moneyShort(value)}`
+                summary: `${products} stock entr${products === 1 ? "y" : "ies"}  |  Value ${moneyShort(value)}`
                        + (low ? `  |  ${low} low stock` : ""),
                 head: [
                     hcell("Product"), hcell("Unit"),
