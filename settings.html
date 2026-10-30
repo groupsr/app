@@ -389,6 +389,12 @@
 
     </div>
 
+<center>
+
+    <button type="button" class="btn btn-danger" onclick="clearSiteData()">
+    <i class="bi bi-trash3 me-2"></i> Clear Cache & Site Data
+    </button>
+</center>
 </main>
 
 
@@ -590,7 +596,7 @@
     tabindex="-1">
 
     <div
-        class="modal-dialog modal-dialog-centered">
+        class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 
         <div class="modal-content">
 
@@ -687,6 +693,10 @@
                                 Auto Generate ID
                             </option>
 
+                            <option value="auto-calculate">
+                                Auto Calculate
+                            </option>
+
                         </select>
 
                     </div>
@@ -718,6 +728,86 @@
                             Examples:
                             <code>EMP[YEAR][Number]</code>,
                             <code>E[Number]</code>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- AUTO CALCULATE -->
+
+                    <div
+                        id="autoCalculateContainer"
+                        class="mb-3 d-none">
+
+                        <label class="form-label fw-semibold">
+
+                            Auto Calculate
+
+                        </label>
+
+                        <div class="mb-2">
+
+                            <label class="form-label small text-muted">
+
+                                First Field (Number)
+
+                            </label>
+
+                            <select
+                                id="autoCalcField1"
+                                class="form-select">
+
+                                <option value="">Select Field</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <label class="form-label small text-muted">
+
+                                Operation
+
+                            </label>
+
+                            <select
+                                id="autoCalcOperation"
+                                class="form-select">
+
+                                <option value="+">Addition (+)</option>
+                                <option value="*">Multiplying (*)</option>
+                                <option value="-">Subtraction (-)</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <label class="form-label small text-muted">
+
+                                Second Field (Number)
+
+                            </label>
+
+                            <select
+                                id="autoCalcField2"
+                                class="form-select">
+
+                                <option value="">Select Field</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-text">
+
+                            Value will be calculated from two numeric fields
+                            in the same setting.
 
                         </div>
 
@@ -863,6 +953,66 @@
                                 <label
                                     class="form-check-label"
                                     for="filterFalse">
+
+                                    False
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CONFIDENTIAL -->
+
+                    <div class="mb-3">
+
+                        <label
+                            class="form-label fw-semibold">
+
+                            Confidential
+
+                        </label>
+
+                        <div>
+
+                            <div
+                                class="form-check form-check-inline">
+
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="confidential"
+                                    id="confidentialTrue"
+                                    value="true">
+
+                                <label
+                                    class="form-check-label"
+                                    for="confidentialTrue">
+
+                                    True
+
+                                </label>
+
+                            </div>
+
+
+                            <div
+                                class="form-check form-check-inline">
+
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="confidential"
+                                    id="confidentialFalse"
+                                    value="false"
+                                    checked>
+
+                                <label
+                                    class="form-check-label"
+                                    for="confidentialFalse">
 
                                     False
 
@@ -1607,6 +1757,10 @@
 </div>
 
 
+
+
+
+
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
@@ -1657,6 +1811,8 @@
     let currentSegmentId = "";
 
     let reopenManagerAfterChild = false;
+
+    let pendingAutoCalcValues = null;
 
 
     // =====================================================
@@ -2210,6 +2366,8 @@
 
                                 <th>Filter</th>
 
+                                <th>Confidential</th>
+
                                 <th class="text-end">
 
                                     Actions
@@ -2227,7 +2385,7 @@
                             <tr>
 
                                 <td
-                                    colspan="7"
+                                    colspan="8"
                                     class="text-center text-muted py-4">
 
                                     Loading...
@@ -2489,7 +2647,7 @@
                 <tr>
 
                     <td
-                        colspan="7"
+                        colspan="8"
                         class="text-center text-muted py-4">
 
                         No fields added yet.
@@ -2534,6 +2692,14 @@
         );
 
 
+        // Map of fieldId -> title (used to display auto-calculate references)
+        const idToTitle = {};
+
+        entries.forEach(([eid, eitem]) => {
+            idToTitle[eid] = eitem?.title || eid;
+        });
+
+
         if (!entries.length) {
 
             tbody.innerHTML = `
@@ -2541,7 +2707,7 @@
                 <tr>
 
                     <td
-                        colspan="7"
+                        colspan="8"
                         class="text-center text-muted py-4">
 
                         No fields added yet.
@@ -2559,6 +2725,9 @@
 
         // ✅ Track whether any field in this setting is locked
         let hasLockedField = false;
+
+        // ✅ Whether current user can toggle lock state (dev-admin only)
+        const isDevAdmin = currentRole === "dev-admin";
 
 
         entries.forEach(
@@ -2657,13 +2826,66 @@
                 }
 
 
+                let autoCalcText = "";
+
+
+                if (
+                    item.type === "auto-calculate" &&
+                    item.field1 &&
+                    item.field2
+                ) {
+
+                    const f1Title =
+                        idToTitle[item.field1] || item.field1;
+
+                    const f2Title =
+                        idToTitle[item.field2] || item.field2;
+
+                    const opSymbol =
+                        item.operation || "+";
+
+
+                    autoCalcText =
+                        `<div class="small mt-1 text-muted">
+                            Calc:
+                            <code>${escapeHtml(f1Title)}</code>
+                            ${escapeHtml(opSymbol)}
+                            <code>${escapeHtml(f2Title)}</code>
+                        </div>`;
+
+                }
+
+
+                // ✅ Lock toggle button — DEV-ADMIN ONLY
+                const lockToggleBtn = isDevAdmin
+                    ? (
+                        isLocked
+                            ? `<button
+                                    type="button"
+                                    class="btn btn-outline-success toggle-lock-field"
+                                    title="Unlock field (make editable)">
+                                    <i class="bi bi-unlock"></i>
+                               </button>`
+                            : `<button
+                                    type="button"
+                                    class="btn btn-outline-warning toggle-lock-field"
+                                    title="Lock field (make protected)">
+                                    <i class="bi bi-lock"></i>
+                               </button>`
+                    )
+                    : "";
+
+
                 // ✅ Locked fields show a lock badge instead of buttons
                 const actionsHtml = isLocked
-                    ? `<span
-                            class="badge text-bg-light border"
-                            title="Protected field — cannot be edited or deleted">
-                            <i class="bi bi-lock-fill me-1"></i>Locked
-                       </span>`
+                    ? `<div class="d-inline-flex align-items-center gap-2 justify-content-end">
+                            <span
+                                class="badge text-bg-light border"
+                                title="Protected field — cannot be edited or deleted">
+                                <i class="bi bi-lock-fill me-1"></i>Locked
+                            </span>
+                            ${lockToggleBtn}
+                       </div>`
                     : `<div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-primary edit-field">
                                 <i class="bi bi-pencil"></i>
@@ -2671,6 +2893,7 @@
                             <button class="btn btn-outline-danger delete-field">
                                 <i class="bi bi-trash"></i>
                             </button>
+                            ${lockToggleBtn}
                        </div>`;
 
 
@@ -2709,6 +2932,8 @@
 
                         ${autoGenText}
 
+                        ${autoCalcText}
+
                     </td>
 
                     <td>
@@ -2723,6 +2948,14 @@
                         ${
                             item.filter
                                 ? '<span class="badge bg-success">True</span>'
+                                : '<span class="badge bg-secondary">False</span>'
+                        }
+                    </td>
+
+                    <td>
+                        ${
+                            item.confidential
+                                ? '<span class="badge bg-warning text-dark">True</span>'
                                 : '<span class="badge bg-secondary">False</span>'
                         }
                     </td>
@@ -2765,6 +2998,29 @@
 
                         }
                     );
+
+                }
+
+
+                // ✅ Lock / Unlock handler — DEV-ADMIN ONLY
+                if (isDevAdmin) {
+
+                    const lockBtn =
+                        tr.querySelector(".toggle-lock-field");
+
+                    if (lockBtn) {
+
+                        lockBtn.addEventListener("click", () => {
+
+                            toggleFieldLock(
+                                settingName,
+                                id,
+                                !isLocked
+                            );
+
+                        });
+
+                    }
 
                 }
 
@@ -2823,6 +3079,59 @@
                 }
 
             }
+
+        }
+
+    }
+
+
+    // =====================================================
+    // TOGGLE FIELD LOCK (dev-admin only)
+    // =====================================================
+
+    async function toggleFieldLock(
+        settingName,
+        fieldId,
+        makeLocked
+    ) {
+
+        const action = makeLocked ? "lock" : "unlock";
+
+        if (!confirm(`Are you sure you want to ${action} this field?`)) {
+
+            return;
+
+        }
+
+
+        try {
+
+            // When locked → editable: false
+            // When unlocked → editable: true
+            await update(
+                ref(
+                    db,
+                    `sr_group/settings/${selectedBusinessId}/${settingName}/${fieldId}`
+                ),
+                {
+                    editable: !makeLocked
+                }
+            );
+
+
+            await loadDynamicSettings(settingName);
+
+        }
+        catch (err) {
+
+            console.error(
+                "Failed to toggle field lock:",
+                err
+            );
+
+            alert(
+                "Failed to update the lock state. Please try again."
+            );
 
         }
 
@@ -3213,9 +3522,24 @@
         );
 
 
+        setRadio(
+            "confidential",
+            data?.confidential ?? false
+        );
+
+
         loadOptions(
             data?.options || {}
         );
+
+
+        pendingAutoCalcValues = (data?.type === "auto-calculate")
+            ? {
+                field1: data?.field1 || "",
+                field2: data?.field2 || "",
+                operation: data?.operation || "+"
+            }
+            : null;
 
 
         updateTypeControls();
@@ -3258,6 +3582,12 @@
             );
 
 
+        const autoCalcContainer =
+            document.getElementById(
+                "autoCalculateContainer"
+            );
+
+
         const sumTrue =
             document.getElementById(
                 "sumTrue"
@@ -3292,6 +3622,19 @@
             "d-none",
             type !== "auto-generate"
         );
+
+
+        autoCalcContainer.classList.toggle(
+            "d-none",
+            type !== "auto-calculate"
+        );
+
+
+        if (type === "auto-calculate") {
+
+            loadAutoCalcFields();
+
+        }
 
 
         if (
@@ -3335,6 +3678,155 @@
 
             filterFalse.disabled =
                 false;
+
+        }
+
+    }
+
+
+    // =====================================================
+    // LOAD AUTO CALCULATE FIELDS (only type === number)
+    // =====================================================
+
+    async function loadAutoCalcFields() {
+
+        const select1 =
+            document.getElementById(
+                "autoCalcField1"
+            );
+
+        const select2 =
+            document.getElementById(
+                "autoCalcField2"
+            );
+
+        const opSelect =
+            document.getElementById(
+                "autoCalcOperation"
+            );
+
+
+        if (!select1 || !select2) {
+
+            return;
+
+        }
+
+
+        select1.innerHTML =
+            '<option value="">Select Field</option>';
+
+        select2.innerHTML =
+            '<option value="">Select Field</option>';
+
+
+        if (!selectedBusinessId || !currentSetting) {
+
+            return;
+
+        }
+
+
+        const currentFieldId =
+            document.getElementById(
+                "fieldId"
+            ).value;
+
+
+        try {
+
+            const snapshot =
+                await get(
+                    ref(
+                        db,
+                        `sr_group/settings/${selectedBusinessId}/${currentSetting}`
+                    )
+                );
+
+
+            if (snapshot.exists()) {
+
+                const data =
+                    snapshot.val() || {};
+
+
+                Object.entries(data).forEach(
+                    ([id, item]) => {
+
+                        if (id === "meta") return;
+
+                        if (!item || typeof item !== "object") return;
+
+                        if (item.type !== "number") return;
+
+                        if (id === currentFieldId) return;
+
+
+                        const label =
+                            item.title || id;
+
+
+                        const opt1 =
+                            document.createElement(
+                                "option"
+                            );
+
+                        opt1.value = id;
+
+                        opt1.textContent = label;
+
+                        select1.appendChild(opt1);
+
+
+                        const opt2 =
+                            document.createElement(
+                                "option"
+                            );
+
+                        opt2.value = id;
+
+                        opt2.textContent = label;
+
+                        select2.appendChild(opt2);
+
+                    }
+                );
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.warn(
+                "loadAutoCalcFields failed:",
+                err
+            );
+
+        }
+
+
+        if (pendingAutoCalcValues) {
+
+            if (pendingAutoCalcValues.field1) {
+
+                select1.value = pendingAutoCalcValues.field1;
+
+            }
+
+            if (pendingAutoCalcValues.field2) {
+
+                select2.value = pendingAutoCalcValues.field2;
+
+            }
+
+            if (opSelect && pendingAutoCalcValues.operation) {
+
+                opSelect.value = pendingAutoCalcValues.operation;
+
+            }
+
+            pendingAutoCalcValues = null;
 
         }
 
@@ -3556,6 +4048,12 @@
                 ).value === "true";
 
 
+            const confidential =
+                document.querySelector(
+                    'input[name="confidential"]:checked'
+                ).value === "true";
+
+
             if (
                 type ===
                 "textarea" ||
@@ -3580,7 +4078,9 @@
 
                 displaySum,
 
-                filter
+                filter,
+
+                confidential
 
             };
 
@@ -3609,6 +4109,72 @@
 
                 fieldData.autoPattern =
                     pattern;
+
+            }
+
+
+            if (
+                type ===
+                "auto-calculate"
+            ) {
+
+                const f1 =
+                    document.getElementById(
+                        "autoCalcField1"
+                    ).value;
+
+                const f2 =
+                    document.getElementById(
+                        "autoCalcField2"
+                    ).value;
+
+                const op =
+                    document.getElementById(
+                        "autoCalcOperation"
+                    ).value;
+
+
+                if (!f1 || !f2) {
+
+                    alert(
+                        "Please select both numeric fields for Auto Calculate."
+                    );
+
+                    return;
+
+                }
+
+
+                if (f1 === f2) {
+
+                    alert(
+                        "Please select two different fields."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!op) {
+
+                    alert(
+                        "Please select an operation."
+                    );
+
+                    return;
+
+                }
+
+
+                fieldData.field1 =
+                    f1;
+
+                fieldData.field2 =
+                    f2;
+
+                fieldData.operation =
+                    op;
 
             }
 
@@ -6579,7 +7145,10 @@
                 "Textarea",
 
             "auto-generate":
-                "Auto Generate ID"
+                "Auto Generate ID",
+
+            "auto-calculate":
+                "Auto Calculate"
 
         };
 
@@ -6679,6 +7248,57 @@
     }
 
 </script>
+
+
+<script>
+async function clearSiteData() {
+    const confirmed = confirm(
+        "Are you sure you want to clear this website's stored data?\n\n" +
+        "This will clear local storage, session storage, and Cache Storage."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        // Clear Local Storage
+        localStorage.clear();
+
+        // Clear Session Storage
+        sessionStorage.clear();
+
+        // Clear Cache Storage
+        if ("caches" in window) {
+            const cacheNames = await caches.keys();
+
+            await Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+        }
+
+        // Unregister Service Workers
+        if ("serviceWorker" in navigator) {
+            const registrations =
+                await navigator.serviceWorker.getRegistrations();
+
+            await Promise.all(
+                registrations.map(registration =>
+                    registration.unregister()
+                )
+            );
+        }
+
+        alert("Website data cleared successfully! The page will now reload.");
+
+        // Reload the page
+        window.location.reload();
+
+    } catch (error) {
+        console.error("Error clearing website data:", error);
+        alert("Some website data could not be cleared. Check the console.");
+    }
+}
+</script>
+
 </body>
 
 </html>

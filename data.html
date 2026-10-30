@@ -192,6 +192,31 @@
     background-color: currentColor;
     opacity: 0.9;
 }
+
+/* Masked confidential cell */
+.confidential-mask {
+    letter-spacing: 0.15em;
+    color: #6c757d;
+    user-select: none;
+}
+
+/* NEW — Locked confidential field in modal */
+.confidential-locked {
+    background-color: #f1f5f9 !important;
+    cursor: not-allowed;
+    font-family: monospace;
+    letter-spacing: 0.2em;
+    color: #6c757d;
+}
+
+/* NEW — Small lock badge in field labels */
+.confidential-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    vertical-align: middle;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
     </style>
 </head>
 
@@ -391,8 +416,8 @@
     let businessId = "";
     let settingKey = "";
     let settingMetaName = "";
-    let projectId = "";               // ← NEW
-    let isConstruction = false;       // ← NEW
+    let projectId = "";
+    let isConstruction = false;
     let fields = [];
     let records = {};
     let activeFilters = {};
@@ -445,24 +470,23 @@
         const params = new URLSearchParams(location.search);
         businessId = params.get("business") || "";
         settingKey = params.get("setting") || "";
-        projectId = params.get("project") || "";        // ← NEW
+        projectId = params.get("project") || "";
 
         if (!businessId || !settingKey) {
             showFatal("Missing business or setting in the URL.");
             return;
         }
 
-
         // Make the Back button carry the same context we arrived with,
-// so manage.html can restore the selected business / project / setting.
-const backBtn = document.getElementById("backBtn");
-if (backBtn) {
-    const bp = new URLSearchParams();
-    bp.set("business", businessId);
-    if (settingKey) bp.set("setting", settingKey);
-    if (projectId)  bp.set("project", projectId);
-    backBtn.href = `manage.html?${bp.toString()}`;
-}
+        // so manage.html can restore the selected business / project / setting.
+        const backBtn = document.getElementById("backBtn");
+        if (backBtn) {
+            const bp = new URLSearchParams();
+            bp.set("business", businessId);
+            if (settingKey) bp.set("setting", settingKey);
+            if (projectId)  bp.set("project", projectId);
+            backBtn.href = `manage.html?${bp.toString()}`;
+        }
 
         if (!userHasBusinessAccess(businessId)) {
             showFatal("You do not have access to this business.");
@@ -500,7 +524,6 @@ if (backBtn) {
 
             wrapper.classList.remove("d-none");
 
-            // Load project details for display
             try {
                 const pSnap = await get(
                     ref(db, `sr_group/businesses/${businessId}/projects/${projectId}`)
@@ -567,6 +590,20 @@ if (backBtn) {
         }
 
         return Object.prototype.hasOwnProperty.call(access, id);
+    }
+
+    // =====================================================
+    // NEW — Confidential helpers
+    // -----------------------------------------------------
+    // canViewConfidential  : admin sees value; everyone else sees *****
+    // canEditConfidential  : admin can edit any confidential value;
+    //                        non-admin cannot edit an EXISTING value
+    //                        (only add new values when the cell is empty
+    //                         or when creating a new record)
+    // =====================================================
+
+    function canManageConfidential() {
+        return isGlobalAdmin();
     }
 
     // =====================================================
@@ -667,7 +704,14 @@ if (backBtn) {
 
         fields.forEach(field => {
             const th = document.createElement("th");
-            th.classList.add("sortable");
+
+            // ✅ Non-admin cannot sort by a confidential field
+            const canSort = !(field.confidential === true && !canManageConfidential());
+
+            if (canSort) {
+                th.classList.add("sortable");
+                th.addEventListener("click", () => toggleSort(field.id));
+            }
 
             if (field.displaySum) {
                 th.classList.add("text-end");
@@ -675,14 +719,17 @@ if (backBtn) {
 
             th.dataset.fieldId = field.id;
 
-            th.innerHTML = `
-                <span>${escapeHtml(field.title || "-")}</span>
-                <i class="bi bi-arrow-down-up sort-icon"></i>
-            `;
+            const lockIcon = (field.confidential === true && !canManageConfidential())
+                ? ' <i class="bi bi-lock-fill text-muted" style="font-size:0.7rem;" title="Confidential — not sortable"></i>'
+                : '';
 
-            th.addEventListener("click", () => {
-                toggleSort(field.id);
-            });
+            const sortIcon = canSort
+                ? '<i class="bi bi-arrow-down-up sort-icon"></i>'
+                : '';
+
+            th.innerHTML = `
+                <span>${escapeHtml(field.title || "-")}</span>${lockIcon}${sortIcon}
+            `;
 
             head.appendChild(th);
         });
@@ -696,6 +743,12 @@ if (backBtn) {
     }
 
     function toggleSort(fieldId) {
+        // ✅ Non-admin cannot sort by confidential field
+        const field = fields.find(f => f.id === fieldId);
+        if (field && field.confidential === true && !canManageConfidential()) {
+            return;
+        }
+
         if (sortState.fieldId !== fieldId) {
             sortState.fieldId = fieldId;
             sortState.direction = "asc";
@@ -852,7 +905,8 @@ if (backBtn) {
             return wrapper;
         }
 
-        if (field.type === "number") {
+        // ✅ Auto-calculate treated as numeric
+        if (field.type === "number" || field.type === "auto-calculate") {
             const row = document.createElement("div");
             row.className = "row g-2";
 
@@ -968,6 +1022,17 @@ if (backBtn) {
 
             if (!field) return;
 
+            // ✅ Non-admin cannot see confidential values in the filter panel
+            if (field.confidential === true && !canManageConfidential()) {
+                box.innerHTML = `
+                    <div class="text-muted small">
+                        <i class="bi bi-lock-fill me-1"></i>
+                        Confidential values are hidden.
+                    </div>
+                `;
+                return;
+            }
+
             const values = Array.from(
                 new Set(
                     Object.values(records)
@@ -1066,6 +1131,10 @@ if (backBtn) {
         return allEntries.filter(([, record]) => {
             if (q) {
                 const match = fields.some(field => {
+                    // ✅ Non-admin cannot search by confidential fields
+                    if (field.confidential === true && !canManageConfidential()) {
+                        return false;
+                    }
                     const v = String(record[field.id] ?? "").toLowerCase();
                     return v.includes(q);
                 });
@@ -1083,7 +1152,8 @@ if (backBtn) {
                     if (f.from && value < f.from) return false;
                     if (f.to && value > f.to) return false;
                 }
-                else if (field.type === "number") {
+                // ✅ Auto-calculate treated as numeric
+                else if (field.type === "number" || field.type === "auto-calculate") {
                     const n = Number(raw);
                     const hasBound = f.min !== "" || f.max !== "";
 
@@ -1119,12 +1189,14 @@ if (backBtn) {
         const field = fields.find(f => f.id === sortState.fieldId);
         const dir = sortState.direction === "asc" ? 1 : -1;
         const type = field?.type || "text";
+        // ✅ Auto-calculate treated as numeric
+        const isNumeric = type === "number" || type === "auto-calculate";
 
         return [...entries].sort((a, b) => {
             const va = a[1][sortState.fieldId];
             const vb = b[1][sortState.fieldId];
 
-            if (type === "number") {
+            if (isNumeric) {
                 const na = Number(va);
                 const nb = Number(vb);
                 const fa = Number.isFinite(na);
@@ -1208,64 +1280,71 @@ if (backBtn) {
         const startIndex = (currentPage - 1) * pageSize;
         const pageEntries = sorted.slice(startIndex, startIndex + pageSize);
 
-pageEntries.forEach(([id, record], index) => {
-    const tr = document.createElement("tr");
+        pageEntries.forEach(([id, record], index) => {
+            const tr = document.createElement("tr");
 
-    let rowColor = null;
-    for (const field of fields) {
-        if (field.type === "select") {
-            const c = getOptionColor(field, record[field.id]);
-            if (c && c !== "none") {
-                rowColor = c;
-                break;
+            let rowColor = null;
+            for (const field of fields) {
+                if (field.type === "select") {
+                    const c = getOptionColor(field, record[field.id]);
+                    if (c && c !== "none") {
+                        rowColor = c;
+                        break;
+                    }
+                }
             }
-        }
-    }
 
-    if (rowColor) {
-        tr.classList.add(`cell-color-${rowColor}`);
-    }
+            if (rowColor) {
+                tr.classList.add(`cell-color-${rowColor}`);
+            }
 
-    const tdIndex = document.createElement("td");
-    tdIndex.textContent = startIndex + index + 1;
-    tr.appendChild(tdIndex);
+            const tdIndex = document.createElement("td");
+            tdIndex.textContent = startIndex + index + 1;
+            tr.appendChild(tdIndex);
 
-    fields.forEach(field => {
-        const td = document.createElement("td");
-        const value = record[field.id] ?? "";
+            fields.forEach(field => {
+                const td = document.createElement("td");
+                const value = record[field.id] ?? "";
 
-        if (field.displaySum) {
-            td.classList.add("text-end");
-        }
+                if (field.displaySum) {
+                    td.classList.add("text-end");
+                }
 
-        td.textContent = String(value);
-        tr.appendChild(td);
-    });
+                // ✅ Confidential masking (unchanged)
+                if (field.confidential === true && !canManageConfidential()) {
+                    td.innerHTML = '<span class="confidential-mask">*****</span>';
+                }
+                else {
+                    td.textContent = String(value);
+                }
 
-    const tdActions = document.createElement("td");
-    tdActions.className = "text-end";
-    tdActions.innerHTML = `
-        <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-primary edit-record" title="Edit">
-                <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-outline-danger delete-record" title="Delete">
-                <i class="bi bi-trash"></i>
-            </button>
-        </div>
-    `;
+                tr.appendChild(td);
+            });
 
-    tdActions.querySelector(".edit-record").addEventListener("click", () => {
-        openRecordModal(id, record);
-    });
+            const tdActions = document.createElement("td");
+            tdActions.className = "text-end";
+            tdActions.innerHTML = `
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary edit-record" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger delete-record" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
 
-    tdActions.querySelector(".delete-record").addEventListener("click", () => {
-        deleteRecord(id);
-    });
+            tdActions.querySelector(".edit-record").addEventListener("click", () => {
+                openRecordModal(id, record);
+            });
 
-    tr.appendChild(tdActions);
-    tbody.appendChild(tr);
-});
+            tdActions.querySelector(".delete-record").addEventListener("click", () => {
+                deleteRecord(id);
+            });
+
+            tr.appendChild(tdActions);
+            tbody.appendChild(tr);
+        });
 
         renderPagination(currentPage, totalPages);
     }
@@ -1350,6 +1429,12 @@ pageEntries.forEach(([id, record], index) => {
                 );
 
                 if (!el) return;
+
+                // ✅ Mask confidential sums for non-admins
+                if (field.confidential === true && !canManageConfidential()) {
+                    el.innerHTML = '<span class="confidential-mask">*****</span>';
+                    return;
+                }
 
                 const total = filteredEntries.reduce((sum, [, r]) => {
                     const n = Number(r[field.id]);
@@ -1517,6 +1602,43 @@ pageEntries.forEach(([id, record], index) => {
     }
 
     // =====================================================
+    // AUTO CALCULATE (re-compute on any input change)
+    // =====================================================
+
+    function recomputeAutoCalcFields() {
+        fields.forEach(field => {
+            if (field.type !== "auto-calculate") return;
+
+            const el = document.getElementById(`rf_${field.id}`);
+            if (!el) return;
+
+            // ✅ Do not overwrite masked confidential input
+            if (el.dataset.confidentialMasked === "true") return;
+
+            const f1El = document.getElementById(`rf_${field.field1}`);
+            const f2El = document.getElementById(`rf_${field.field2}`);
+
+            const v1 = f1El ? Number(f1El.value) : NaN;
+            const v2 = f2El ? Number(f2El.value) : NaN;
+
+            if (!Number.isFinite(v1) || !Number.isFinite(v2)) {
+                el.value = "";
+                return;
+            }
+
+            let result;
+            switch (field.operation) {
+                case "+": result = v1 + v2; break;
+                case "-": result = v1 - v2; break;
+                case "*": result = v1 * v2; break;
+                default:  result = "";
+            }
+
+            el.value = result === "" ? "" : result;
+        });
+    }
+
+    // =====================================================
     // RECORD MODAL — OPEN (ADD / EDIT)
     // =====================================================
 
@@ -1535,11 +1657,68 @@ pageEntries.forEach(([id, record], index) => {
             const col = document.createElement("div");
             col.className = "col-12 col-md-6";
 
+            const isConfidential = field.confidential === true;
+            const canSee = canManageConfidential();
+
+            // For non-admins, a confidential field that already holds a value
+            // is locked. If the value is empty (or it's a new record), the
+            // non-admin is allowed to ADD it — that's the "only add" rule.
+            const existingValue =
+                isEdit && record ? record[field.id] : undefined;
+
+            const hasValue =
+                existingValue !== undefined &&
+                existingValue !== null &&
+                String(existingValue).trim() !== "";
+
+            const isLocked = isConfidential && !canSee && hasValue;
+
             const label = document.createElement("label");
             label.className = "field-label";
             label.setAttribute("for", `rf_${field.id}`);
-            label.textContent = field.title || "-";
+
+            if (isConfidential) {
+                label.innerHTML = `
+                    ${escapeHtml(field.title || "-")}
+                    <span class="badge bg-dark confidential-badge ms-1">
+                        <i class="bi bi-lock-fill me-1"></i>Confidential
+                    </span>
+                `;
+            }
+            else {
+                label.textContent = field.title || "-";
+            }
+
             col.appendChild(label);
+
+            // =====================================================
+            // ✅ LOCKED — non-admin cannot view or edit this value
+            // =====================================================
+            if (isLocked) {
+                const masked = document.createElement("input");
+                masked.type = "text";
+                masked.className = "form-control confidential-locked";
+                masked.id = `rf_${field.id}`;
+                masked.readOnly = true;
+                masked.value = "*****";
+                masked.dataset.confidentialMasked = "true";
+                masked.dataset.originalValue = String(existingValue ?? "");
+                col.appendChild(masked);
+
+                const hint = document.createElement("div");
+                hint.className = "form-text small text-muted";
+                hint.innerHTML =
+                    '<i class="bi bi-shield-lock me-1"></i>' +
+                    'Your role cannot view or edit this value.';
+                col.appendChild(hint);
+
+                container.appendChild(col);
+                return;
+            }
+
+            // =====================================================
+            // NORMAL FIELD HANDLING (plus the existing auto-* branches)
+            // =====================================================
 
             let input;
 
@@ -1564,6 +1743,46 @@ pageEntries.forEach(([id, record], index) => {
                     hint.className = "form-text small";
                     hint.innerHTML = `Pattern: <code>${escapeHtml(field.autoPattern)}</code> (auto)`;
                     col.appendChild(hint);
+                }
+
+                // ✅ Extra hint for editable confidential fields
+                if (isConfidential && !canSee) {
+                    appendConfidentialAddHint(col);
+                }
+
+                container.appendChild(col);
+                return;
+            }
+
+            // ✅ AUTO-CALCULATE — read-only, value computed
+            if (field.type === "auto-calculate") {
+                input = document.createElement("input");
+                input.type = "text";
+                input.className = "form-control bg-light";
+                input.id = `rf_${field.id}`;
+                input.readOnly = true;
+
+                if (isEdit && record[field.id] !== undefined && record[field.id] !== null) {
+                    input.value = record[field.id];
+                }
+
+                col.appendChild(input);
+
+                const f1 = fields.find(f => f.id === field.field1);
+                const f2 = fields.find(f => f.id === field.field2);
+                const opSym =
+                    field.operation === "*" ? "×" :
+                    field.operation === "-" ? "−" : "+";
+
+                const hint = document.createElement("div");
+                hint.className = "form-text small";
+                hint.innerHTML =
+                    `Auto: <code>${escapeHtml(f1?.title || "?")}</code> ${opSym} <code>${escapeHtml(f2?.title || "?")}</code>`;
+                col.appendChild(hint);
+
+                // ✅ Extra hint for editable confidential fields
+                if (isConfidential && !canSee) {
+                    appendConfidentialAddHint(col);
                 }
 
                 container.appendChild(col);
@@ -1627,10 +1846,31 @@ pageEntries.forEach(([id, record], index) => {
             }
 
             col.appendChild(input);
+
+            // ✅ Extra hint for editable confidential fields
+            if (isConfidential && !canSee) {
+                appendConfidentialAddHint(col);
+            }
+
             container.appendChild(col);
         });
 
+        // ✅ Compute auto-calculate fields now and on every change
+        recomputeAutoCalcFields();
+        container.addEventListener("input", recomputeAutoCalcFields);
+
         recordModal.show();
+    }
+
+    // Small helper — used only in the "non-admin + editable confidential"
+    // case. Tells the user the value will become hidden once saved.
+    function appendConfidentialAddHint(col) {
+        const hint = document.createElement("div");
+        hint.className = "form-text small text-muted";
+        hint.innerHTML =
+            '<i class="bi bi-eye-slash me-1"></i>' +
+            'After saving, this value will be hidden from your role.';
+        col.appendChild(hint);
     }
 
     // =====================================================
@@ -1643,12 +1883,23 @@ pageEntries.forEach(([id, record], index) => {
         const saveBtn = document.getElementById("saveRecordBtn");
         saveBtn.disabled = true;
 
+        // ✅ Ensure latest computed values are used
+        recomputeAutoCalcFields();
+
         const id = document.getElementById("recordId").value;
         const isEdit = !!id;
 
         const payload = {};
 
         fields.forEach(field => {
+            const el = document.getElementById(`rf_${field.id}`);
+
+            // ✅ FIRST — preserve masked confidential value
+            if (el && el.dataset.confidentialMasked === "true") {
+                payload[field.id] = el.dataset.originalValue;
+                return;
+            }
+
             if (field.type === "auto-generate") {
                 if (isEdit && records[id] && records[id][field.id]) {
                     payload[field.id] = records[id][field.id];
@@ -1660,10 +1911,13 @@ pageEntries.forEach(([id, record], index) => {
                 return;
             }
 
-            const el = document.getElementById(`rf_${field.id}`);
             let value = el ? el.value : "";
 
-            if (field.type === "number" && value !== "") {
+            // ✅ Auto-calculate treated as numeric
+            if (
+                (field.type === "number" || field.type === "auto-calculate") &&
+                value !== ""
+            ) {
                 const n = Number(value);
                 value = Number.isFinite(n) ? n : value;
             }
@@ -1757,11 +2011,18 @@ pageEntries.forEach(([id, record], index) => {
         }
 
         const header = fields.map(field => field.title || "-");
+        const canSeeConfidential = canManageConfidential();
 
         const rows = filtered.map(([, record], index) => {
             const row = { "#": index + 1 };
             fields.forEach(field => {
-                row[field.title || "-"] = record[field.id] ?? "";
+                // ✅ Mask confidential values for non-admins
+                if (field.confidential === true && !canSeeConfidential) {
+                    row[field.title || "-"] = "*****";
+                }
+                else {
+                    row[field.title || "-"] = record[field.id] ?? "";
+                }
             });
             return row;
         });
@@ -1773,6 +2034,12 @@ pageEntries.forEach(([id, record], index) => {
 
             fields.forEach(field => {
                 if (field.displaySum) {
+                    // ✅ Mask confidential sums for non-admins
+                    if (field.confidential === true && !canSeeConfidential) {
+                        sumRow[field.title || "-"] = "*****";
+                        return;
+                    }
+
                     const total = filtered.reduce((s, [, r]) => {
                         const n = Number(r[field.id]);
                         return s + (Number.isFinite(n) ? n : 0);

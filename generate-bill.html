@@ -773,7 +773,7 @@
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
         import {
-            ref, get, push, set
+            ref, get, push, set, update
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
 
@@ -966,7 +966,7 @@
 
 
         // =====================================================
-        // CASH BILL / GST REQUIREMENT HELPERS  (NEW)
+        // CASH BILL / GST REQUIREMENT HELPERS
         // =====================================================
 
         function isCashBillType() {
@@ -976,10 +976,8 @@
         function updateGstRequirementUI() {
             const cash = isCashBillType();
 
-            // GST Setting is optional for Cash Bills
             gstSelect.required = !cash;
 
-            // Hide the red asterisk next to the "GST Setting" label
             if (gstRequiredStar) {
                 gstRequiredStar.classList.toggle("d-none", cash);
             }
@@ -1169,7 +1167,6 @@
             updateTaxVisibility();
             recalcTotals();
 
-            // Ensure GST required state matches current bill type (empty at start)
             updateGstRequirementUI();
         });
 
@@ -1603,7 +1600,8 @@
 
             const phaseSet = new Set();
 
-            Object.values(resolved).forEach(r => {
+            // Track firebase keys + billed status per resolved record
+            Object.entries(resolved).forEach(([resolvedKey, r]) => {
                 if (!r || typeof r !== "object") return;
 
                 const phase = String(r.phase || "").trim() || "Unassigned";
@@ -1624,7 +1622,10 @@
                         totalCost: 0,
                         sellingPrice: 0,
                         costPrice: 0,
-                        recordIds: []
+                        recordIds: [],
+                        recordKeys: [],
+                        billReferences: new Set(),
+                        billedCount: 0
                     };
                 }
 
@@ -1660,6 +1661,14 @@
                 }
 
                 item.recordIds.push(r);
+                item.recordKeys.push(resolvedKey);
+
+                if (r.billGenerated) {
+                    item.billedCount += 1;
+                    if (r.invoiceNumber) {
+                        item.billReferences.add(String(r.invoiceNumber));
+                    }
+                }
             });
 
             Object.values(phaseResolvedItems).forEach(itemsMap => {
@@ -1768,8 +1777,6 @@
                 return;
             }
 
-            // NOTE: Cost/Unit and Profit are intentionally NOT shown here.
-            // They are still carried through the row data on import.
             let html = `
                 <div class="table-responsive">
                     <table class="table table-sm table-hover import-phase-table mb-0">
@@ -1789,15 +1796,41 @@
             `;
 
             items.forEach(item => {
+                const totalCount    = item.recordKeys.length;
+                const billedCount   = item.billedCount || 0;
+                const fullyBilled   = totalCount > 0 && billedCount >= totalCount;
+                const partialBilled = billedCount > 0 && billedCount < totalCount;
+
+                const billedBadge = fullyBilled
+                    ? `<span class="badge bg-primary ms-1" style="font-size:0.65rem;">
+                           <i class="bi bi-receipt-cutoff me-1"></i>Billed
+                       </span>`
+                    : partialBilled
+                    ? `<span class="badge bg-warning text-dark ms-1" style="font-size:0.65rem;">
+                           <i class="bi bi-exclamation-circle me-1"></i>Partial ${billedCount}/${totalCount}
+                       </span>`
+                    : "";
+
+                const billRefText = item.billReferences.size > 0
+                    ? `<div class="small text-muted mt-1">
+                           <i class="bi bi-receipt me-1"></i>
+                           ${Array.from(item.billReferences).slice(0, 2).map(escapeHtml).join(", ")}
+                           ${item.billReferences.size > 2 ? ` +${item.billReferences.size - 2}` : ""}
+                       </div>`
+                    : "";
+
                 html += `
                     <tr>
                         <td>
                             <input type="checkbox"
                                    class="form-check-input import-item-check"
                                    data-title="${escapeHtml(item.title)}"
-                                   checked>
+                                   ${fullyBilled ? "" : "checked"}>
                         </td>
-                        <td class="fw-semibold">${escapeHtml(item.title)}</td>
+                        <td class="fw-semibold">
+                            <div>${escapeHtml(item.title)} ${billedBadge}</div>
+                            ${billRefText}
+                        </td>
                         <td class="text-end">${formatMoney(item.quantity)}</td>
                         <td>${escapeHtml(item.unit || "—")}</td>
                         <td class="text-end">${formatMoney(item.sellingPrice)}</td>
@@ -1949,8 +1982,6 @@
         function createResolvedItemRow(item, phase) {
             const tr = document.createElement("tr");
 
-            // Cost/Unit and Profit inputs are HIDDEN (class "hidden-col")
-            // — they still exist so calculation & DB save work.
             tr.innerHTML = `
                 <td>
                     <div class="item-search-wrap">
@@ -2007,6 +2038,11 @@
 
             if (phase) {
                 tr.dataset.itemPhase = phase;
+            }
+
+            // NEW — store firebase keys of the resolved records this row came from
+            if (item.recordKeys && item.recordKeys.length) {
+                tr.dataset.itemRecordKeys = JSON.stringify(item.recordKeys);
             }
 
             const { item: matched } = resolveCatalogItemForPhase(item);
@@ -2241,7 +2277,6 @@
         billTypeSelect.addEventListener("change", async () => {
             const id = billTypeSelect.value;
 
-            // Toggle GST requirement based on selected bill type
             updateGstRequirementUI();
 
             if (!id) {
@@ -2327,7 +2362,7 @@
         }
 
 
-         function renderField(segId, fieldId, field) {
+        function renderField(segId, fieldId, field) {
             const fieldName = field.name || "Field";
             const type = field.type || "text";
 
@@ -2340,8 +2375,6 @@
             const autoSetDate = field.autoSetDate === true;
             const autoSuggest = field.autoSuggest === true;
 
-            // CHANGED: only auto-generated number fields stay locked.
-            // autoSetDate fields are pre-filled but remain editable.
             const readonlyAttr = autoGenerate ? "readonly" : "";
 
             const autoAttrs = `
@@ -2868,7 +2901,6 @@
         function addItemRow() {
             const tr = document.createElement("tr");
 
-            // Cost/Unit and Profit inputs are HIDDEN — calculations still happen.
             tr.innerHTML = `
                 <td>
                     <div class="item-search-wrap">
@@ -2921,7 +2953,7 @@
 
 
         // =====================================================
-        // ROW AMOUNT + PROFIT (still calculated even if hidden)
+        // ROW AMOUNT + PROFIT
         // =====================================================
 
         function recalcRowAmount(event) {
@@ -3022,7 +3054,6 @@
             const grand = taxable + cgstAmt + sgstAmt + igstAmt;
             document.getElementById("grandTotal").textContent = formatMoney(grand);
 
-            // Still compute and store total profit (hidden in UI).
             const totalProfit = getTotalProfit();
             const totalProfitEl = document.getElementById("totalProfit");
             if (totalProfitEl) {
@@ -3152,7 +3183,7 @@
 
 
         // =====================================================
-        // COLLECT ITEMS (still captures cost & profit for DB)
+        // COLLECT ITEMS (captures cost & profit for DB, plus resolved record keys)
         // =====================================================
 
         function collectItems() {
@@ -3196,6 +3227,16 @@
 
                     if (row.dataset.itemPhase) {
                         item.phase = row.dataset.itemPhase;
+                    }
+
+                    // NEW — link back to the resolved records this row came from
+                    if (row.dataset.itemRecordKeys) {
+                        try {
+                            item.resolvedRecordIds = JSON.parse(row.dataset.itemRecordKeys);
+                        }
+                        catch (e) {
+                            // ignore malformed data
+                        }
                     }
 
                     items.push(item);
@@ -3257,6 +3298,45 @@
 
 
         // =====================================================
+        // MARK RESOLVED RECORDS AS BILLED
+        // =====================================================
+
+        async function markResolvedRecordsAsBilled(items, billId, invoiceNumber) {
+            if (!selectedBusinessId || !selectedProjectId) return;
+            if (!Array.isArray(items) || !items.length) return;
+
+            const basePath =
+                `sr_group/businesses/${selectedBusinessId}/projects/${selectedProjectId}/resolved`;
+
+            const updates = [];
+            const timestamp = Date.now();
+
+            items.forEach(item => {
+                if (!Array.isArray(item.resolvedRecordIds) ||
+                    !item.resolvedRecordIds.length) {
+                    return;
+                }
+
+                item.resolvedRecordIds.forEach(recId => {
+                    if (!recId) return;
+                    updates.push(
+                        update(ref(db, `${basePath}/${recId}`), {
+                            billGenerated:   true,
+                            billId:          String(billId || ""),
+                            invoiceNumber:   String(invoiceNumber || ""),
+                            billGeneratedAt: timestamp
+                        })
+                    );
+                });
+            });
+
+            if (updates.length) {
+                await Promise.allSettled(updates);
+            }
+        }
+
+
+        // =====================================================
         // SAVE BILL
         // =====================================================
 
@@ -3272,8 +3352,6 @@
                 return null;
             }
 
-            // GST Setting is only required when the selected Bill Type is NOT
-            // the Cash Bill (or when no bill type is selected yet).
             if (!isCashBillType() && !gstSelect.value) {
                 showStatus("Please select a GST setting.");
                 return null;
@@ -3332,8 +3410,10 @@
                 showStatus(`Bill ${invoiceNumber} saved successfully.`, "success");
 
                 await deductProductQuantities(items);
+                await markResolvedRecordsAsBilled(items, newRef.key, invoiceNumber);
                 await loadItemCatalog();
                 await loadPreviousBills();
+                await loadWorkflowPhases();   // refresh billed status for next import
                 await refreshAllAutoFields();
 
                 return {
@@ -3424,7 +3504,6 @@
             updateTaxVisibility();
             recalcTotals();
 
-            // Bill type is cleared → GST setting is required again
             updateGstRequirementUI();
         });
 

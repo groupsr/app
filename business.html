@@ -399,7 +399,7 @@
                             { value: "Monthly", color: "secondary" }
                         ]
                     },
-                    { title: "Amount", type: "number", filter: true, displaySum: false, editable: false }
+                    { title: "Amount", type: "number", filter: true, displaySum: false, editable: false, confidential: true }
                 ]
             },
 
@@ -422,7 +422,7 @@
                             { value: "Nos",   color: "none" }
                         ]
                     },
-                    { title: "Purchase Price", type: "number", filter: true, displaySum: false, editable: false  },
+                    { title: "Purchase Price", type: "number", filter: true, displaySum: false, editable: false, confidential: true},
                     { title: "Selling Price", type: "text", filter: true, displaySum: false, editable: false  },
                     { title: "Remarks", type: "textarea", filter: false, displaySum: false }
                 ]
@@ -491,7 +491,12 @@
                             { value: "Sq.ft", color: "none" },
                             { value: "rmt",   color: "none" }
                         ]
-                    }
+                    },
+
+                    { title: "Unit/Rate", type: "number", filter: false, displaySum: true, editable: false  },
+                    { title: "Unit/Cost", type: "number", filter: false, displaySum: false, editable: false  },
+                    { title: "Value", type: "number", filter: false, displaySum: true, editable: true  }
+                    
                    
                 ]
             }
@@ -628,10 +633,14 @@
                     order: Number(index + 1)
                 };
 
-                // ✅ Persist the "editable" flag so the Settings page can lock fields.
+                // ✅ Persist the "editable" flag so the Settings page can lock fields. 
                 //    When not provided, the field is treated as editable.
                 if (fieldDef.editable !== undefined) {
                     fieldNode.editable = fieldDef.editable;
+                }
+
+                if (fieldDef.confidential !== undefined) {
+                    fieldNode.confidential = fieldDef.confidential;
                 }
 
                 if (fieldDef.type === "auto-generate" && fieldDef.autoPattern) {
